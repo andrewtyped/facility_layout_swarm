@@ -77,7 +77,7 @@ namespace FaciltyLayout.Core
             return isContiguous;
         }
 
-        public void ContigHelper(int row, int column, int department, int rows, int columns, int[,] facility)
+        private void ContigHelper(int row, int column, int department, int rows, int columns, int[,] facility)
         {
             //terminate if we're outside the bounds of the facility
             if (row < 0 || rows <= row || column < 0 || columns <= column)
