@@ -19,7 +19,6 @@ namespace FacilityLayout.Core.Tests
             _facilityLayoutForm = new Form1();
         }
 
-
         [TearDown]
         public void TearDown()
         {

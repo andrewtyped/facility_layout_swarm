@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ContiguityTester.cs" />
     <Compile Include="FacilityEvaluator.cs" />
     <Compile Include="PortedFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

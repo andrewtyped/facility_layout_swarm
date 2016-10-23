@@ -35,6 +35,7 @@ Public Class Form1
     Private TransformVDC As Integer
 
     Private facilityEvaluator As New FacilityEvaluator()
+    Private contiguityTester As New ContiguityTester()
 
     Private Structure Termites
         Dim VertDirection As Integer 'How far up/down should I go each turn?
@@ -69,19 +70,6 @@ Public Class Form1
         Dim NumRelations As Integer
     End Structure
 
-    Private Sub ContigHelper(row As Integer, column As Integer, dept As Integer, rows As Integer, columns As Integer)
-        If row < 0 Or rows <= row Or column < 0 Or columns <= column Then
-            Return
-        ElseIf myFacilityMatrix(row, column) <> -1 * dept Then
-            Return
-        Else
-            myFacilityMatrix(row, column) = -1 * myFacilityMatrix(row, column)
-            ContigHelper(row - 1, column, dept, rows, columns)
-            ContigHelper(row + 1, column, dept, rows, columns)
-            ContigHelper(row, column - 1, dept, rows, columns)
-            ContigHelper(row, column + 1, dept, rows, columns)
-        End If
-    End Sub
     'Termite sets his tile down
     Private Sub DropTile(ByVal X As Integer, ByVal Y As Integer, ByVal TermiteNumber As Integer)
         Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0),
@@ -315,14 +303,14 @@ Public Class Form1
             ReorganizationMethod1(Rows, Columns)
 
             For i = 1 To myNumDepartments
-                ContigIndicator = SingleDeptContig(i, Rows, Columns)
+                ContigIndicator = contiguityTester.DepartmentIsContiguous(i, myFacilityMatrix)
 
                 If ContigIndicator = True Then
                     FreezeDeptMotion(i, Rows, Columns)
                 End If
             Next
 
-            TotalContig = TestContig(Rows, Columns)
+            TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
         Loop Until TotalContig = True
 
         VDCP = facilityEvaluator.VolumeDistanceCostProduct(myNumDepartments, myFacilityMatrix, myVolumeMatrix, myCostMatrix, myDeptSizes)
@@ -744,7 +732,7 @@ Public Class Form1
             End If
             ReorganizationMethodScholar(rows - 1, columns - 1, myNumTermites - 1)
             myLoopCounter = myLoopCounter + 1
-            TotalContig = TestContig(rows, columns)
+            TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
             If n < myNumTermites Then
                 If Math.IEEERemainder(myLoopCounter, Phase1Decay) = 0 AndAlso myLoopCounter >= myGravStart - Math.Round(myGravStart / 4) Then
                     myTermites(n).TermiteType = 0
@@ -753,7 +741,7 @@ Public Class Form1
             End If
             If myLoopCounter >= myGravStart + Math.Round(myGravStart / 2) Then
                 For a = 1 To myNumDepartments
-                    ContigIndicator = SingleDeptContig(a, rows, columns)
+                    ContigIndicator = contiguityTester.DepartmentIsContiguous(a, myFacilityMatrix)
                     If ContigIndicator = False Then
                         TotalContig = False
                     End If
@@ -1187,7 +1175,7 @@ Public Class Form1
 
                 ReorganizationMethodScholar(Rows, Columns, myNumTermites)
                 myLoopCounter = myLoopCounter + 1
-                TotalContig = TestContig(Rows, Columns)
+                TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
                 If n < myNumTermites Then
                     If Math.IEEERemainder(myLoopCounter, Phase1Decay) = 0 AndAlso myLoopCounter >= myGravStart - Math.Round(myGravStart / 4) Then
                         myTermites(n).TermiteType = 0
@@ -1196,7 +1184,7 @@ Public Class Form1
                 End If
                 If myLoopCounter >= myGravStart + Math.Round(myGravStart / 2) Then
                     For i = 1 To myNumDepartments
-                        ContigIndicator = SingleDeptContig(i, Rows, Columns)
+                        ContigIndicator = contiguityTester.DepartmentIsContiguous(i, myFacilityMatrix)
                         If ContigIndicator = False Then
                             TotalContig = False
                         End If
@@ -1272,7 +1260,7 @@ Public Class Form1
                     TileRefresher(myDeptRowsColumns(0), myDeptRowsColumns(1))
                 End If
                 myLoopCounter = myLoopCounter + 1
-                TotalContig = TestContig(myDeptRowsColumns(0), myDeptRowsColumns(1))
+                TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
                 If n < myNumTermites Then
                     If Math.IEEERemainder(myLoopCounter, Phase2Decay) = 0 AndAlso myLoopCounter >= myGravStart - Math.Round(3 * myGravStart / 4) Then
                         myTermites(n).TermiteType = 0
@@ -1347,35 +1335,7 @@ Public Class Form1
         Next
         Return NumberSimilarTilesAdj
     End Function
-    Private Function SingleDeptContig(ByVal dept As Integer, ByVal rows As Integer, ByVal columns As Integer)
-        Dim StartPoint(myNumDepartments + 1, 1)
-        Dim row, column As Integer
-        Dim contig As Boolean = True
-        'Dim VacancyCounter As AdjacentTileStats
-        Dim CornerOpen As Boolean = False
 
-        For row = 0 To rows - 1
-            For column = 0 To columns - 1
-                StartPoint(myFacilityMatrix(row, column), 0) = row
-                StartPoint(myFacilityMatrix(row, column), 1) = column
-                If myFacilityMatrix(row, column) = dept Then
-                    myFacilityMatrix(row, column) = -1 * myFacilityMatrix(row, column)
-                End If
-            Next
-        Next
-        row = StartPoint(dept, 0)
-        column = StartPoint(dept, 1)
-        ContigHelper(row, column, dept, rows, columns)
-        For row = 0 To rows - 1
-            For column = 0 To columns - 1
-                If myFacilityMatrix(row, column) < 0 Then
-                    myFacilityMatrix(row, column) = Math.Abs(myFacilityMatrix(row, column))
-                    contig = False
-                End If
-            Next
-        Next
-        Return contig
-    End Function
     Private Sub TermiteAssignment(ByVal NumTermites As Integer)
         Dim maxflows(myNumDepartments) As Integer
         Dim flowpercentages(myNumDepartments) As Double
@@ -1418,42 +1378,14 @@ Public Class Form1
             End If
         Next
     End Sub
-    'These functions are recursive algorithms to determine the contiguity of departments
-    Private Function TestContig(ByVal rows As Integer, ByVal columns As Integer)
-        Dim StartPoint(myNumDepartments, 1)
-        Dim StartPointDiscovered(myNumDepartments)
-        Dim row, column, dept As Integer
-        Dim contig As Boolean = True
 
-        For row = 0 To rows - 1
-            For column = 0 To columns - 1
-                StartPoint(myFacilityMatrix(row, column), 0) = row
-                StartPoint(myFacilityMatrix(row, column), 1) = column
-                myFacilityMatrix(row, column) = -1 * myFacilityMatrix(row, column)
-            Next
-        Next
-        For dept = 1 To myNumDepartments
-            row = StartPoint(dept, 0)
-            column = StartPoint(dept, 1)
-            ContigHelper(row, column, dept, rows, columns)
-        Next
-        For row = 0 To rows - 1
-            For column = 0 To columns - 1
-                If myFacilityMatrix(row, column) < 0 Then
-                    myFacilityMatrix(row, column) = Math.Abs(myFacilityMatrix(row, column))
-                    contig = False
-                End If
-
-            Next
-        Next
-        Return contig
-    End Function
     Private Sub TextReader()
         myGravStart = 500
         If TxtGravStart.Text <> "" Then
             Integer.TryParse(TxtGravStart.Text, myGravStart)
         End If
     End Sub
+
     'Refreshes the animation of tiles
     Private Sub TileRefresher(ByVal rows As Integer, ByVal columns As Integer)
         For i = 0 To rows - 1
