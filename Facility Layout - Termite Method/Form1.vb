@@ -591,7 +591,7 @@ Public Class Form1
         Dim color As New Color
 
         Dim txtboxspacing As Integer = 200
-        Me.Height = Rows * 29 + 40
+        Me.Height = Rows * 29 + 500
         Me.Width = Columns * 25 + 500
         TxtColumns.Left = Columns * 25 + 150
         LblColumns.Left = TxtColumns.Left - LblColumns.Width - 3
@@ -1147,7 +1147,6 @@ Public Class Form1
                 Integer.TryParse(TxtTermites.Text, NumTermites)
             End If
             ReleaseTheTermites(NumTermites, Rows, Columns)
-            'TermiteAssignment(NumTermites)
             StartTime = Now
             Do
                 refreshcounter = refreshcounter + 1
@@ -1336,49 +1335,6 @@ Public Class Form1
         Return NumberSimilarTilesAdj
     End Function
 
-    Private Sub TermiteAssignment(ByVal NumTermites As Integer)
-        Dim maxflows(myNumDepartments) As Integer
-        Dim flowpercentages(myNumDepartments) As Double
-        Dim sum As Integer = 0
-        Dim department As Integer = 1
-        Dim departmentcounter As Double = 0.0
-        Dim rand As Integer
-        Dim specifictiletermitecounter As Double = 0.0
-        maxflows = MaxFlowValue()
-
-        For i = 1 To myNumDepartments
-            sum = sum + maxflows(i)
-        Next
-
-        For i = 1 To myNumDepartments
-            flowpercentages(i) = maxflows(i) ^ 3 / sum
-        Next
-
-        For i = 0 To myNumTermites - 1
-            rand = RandomRow.Next(0, 20)
-            If rand < 19 Then
-                myTermites(i).SpecificTile = True
-                specifictiletermitecounter = specifictiletermitecounter + 1.0
-            Else
-                myTermites(i).SpecificTile = False
-            End If
-        Next
-
-        For i = 0 To myNumTermites - 1
-            If myTermites(i).SpecificTile = True Then
-                If departmentcounter / specifictiletermitecounter >= flowpercentages(department) Then
-                    department = department + 1
-                    If department > myNumDepartments Then
-                        department = myNumDepartments
-                    End If
-                    departmentcounter = 0
-                End If
-                myTermites(i).WhatSpecificTile = department
-                departmentcounter = departmentcounter + 1.0
-            End If
-        Next
-    End Sub
-
     Private Sub TextReader()
         myGravStart = 500
         If TxtGravStart.Text <> "" Then
@@ -1516,25 +1472,4 @@ Public Class Form1
         PicVDP.Visible = True
         g.Dispose()
     End Sub
-    'Governs what tile a scholar termite is looking for. Statistically more likely to
-    'Gravitate to the dpt with strongest flow relationship
-    Private Sub VirtualTileSelect(ByVal TermiteNumber As Integer)
-        Dim i As Integer
-        Dim RandFlow As Integer
-        Dim ProgressiveFlowSum As Integer = 0
-        Dim Flows(myNumDepartments) As FlowStats
-        Flows = FlowFinder()
-        RandFlow = RandomRow.Next(1, Flows(myTermites(TermiteNumber).TileDept).FlowSum + 1)
-        i = 1
-        Do
-            If Flows(myTermites(TermiteNumber).TileDept).Flows(i) > 0 AndAlso
-                ProgressiveFlowSum <= RandFlow AndAlso RandFlow <= ProgressiveFlowSum +
-                Flows(myTermites(TermiteNumber).TileDept).Flows(i) Then
-                myTermites(TermiteNumber).VirtualTileDept = i
-            End If
-            ProgressiveFlowSum = ProgressiveFlowSum + Flows(myTermites(TermiteNumber).TileDept).Flows(i)
-            i = i + 1
-        Loop Until i = myNumDepartments + 1
-    End Sub
-
 End Class
