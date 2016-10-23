@@ -43,6 +43,10 @@
   <ItemGroup>
     <Compile Include="ContiguityTester.cs" />
     <Compile Include="FacilityEvaluator.cs" />
+    <Compile Include="Models\AdjacentTileStats.cs" />
+    <Compile Include="Models\DepartmentStats.cs" />
+    <Compile Include="Models\FlowStats.cs" />
+    <Compile Include="Models\Termites.cs" />
     <Compile Include="PortedFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

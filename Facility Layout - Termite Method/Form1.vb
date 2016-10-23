@@ -1,5 +1,6 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports FaciltyLayout.Core
+Imports FaciltyLayout.Core.Models
 
 <Assembly: InternalsVisibleTo("FacilityLayout.Core.Tests")>
 Public Class Form1
@@ -36,39 +37,6 @@ Public Class Form1
 
     Private facilityEvaluator As New FacilityEvaluator()
     Private contiguityTester As New ContiguityTester()
-
-    Private Structure Termites
-        Dim VertDirection As Integer 'How far up/down should I go each turn?
-        Dim HorizDirection As Integer 'How far left/right should I go each turn?
-        Dim ColumnPos As Integer 'What column am I in?
-        Dim RowPos As Integer 'What row am I in?
-        Dim HasTile As Boolean 'Do I have a tile?
-        Dim SpecificTile As Boolean 'Will I only pick up a certain kind of tile?
-        Dim WhatSpecificTile As Integer 'What is the only kind of tile I'll pick up?
-        Dim TileDept As Integer 'What kind of tile do I have?
-        Dim VirtualTileDept As Integer
-        Dim TermiteType As Integer
-    End Structure
-
-    Private Structure DepartmentStats
-        Dim Length, Width As Integer
-        Dim Area As Integer
-        Dim Up, Left, Bottom, Right As Integer
-    End Structure
-
-    Private Structure AdjacentTileStats
-        Dim Number As Integer
-        Dim OpenCorner As Boolean
-        Dim RelevantTiles As Boolean
-        Dim ContigTiles As Boolean
-    End Structure
-
-    Private Structure FlowStats
-        Dim Flows() As Integer
-        Dim CondensedFlows() As Integer
-        Dim FlowSum As Integer
-        Dim NumRelations As Integer
-    End Structure
 
     'Termite sets his tile down
     Private Sub DropTile(ByVal X As Integer, ByVal Y As Integer, ByVal TermiteNumber As Integer)
