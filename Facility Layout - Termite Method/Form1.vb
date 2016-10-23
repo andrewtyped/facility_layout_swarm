@@ -1,17 +1,21 @@
-﻿Public Class Form1
+﻿Imports System.Runtime.CompilerServices
+Imports FaciltyLayout.Core
+
+<Assembly: InternalsVisibleTo("FacilityLayout.Core.Tests")>
+Public Class Form1
     Private myDataFile As String
-    Private myNumDepartments As Integer
+    Friend myNumDepartments As Integer
     Private myDeptRowsColumns(1) As Integer
     Private myFixedDeptIndicator() As Boolean 'Is this a fixed department?
     Private myFixedDeptTileArray(,) As Boolean 'Does this space hold a tile belonging to a fixed department?
     Private myFixedDeptLocations(,) As Integer 'Where are the fixed tiles located on the facility field?
-    Private myDeptSizes() As Integer
-    Private myVolumeMatrix(,) As Integer
+    Friend myDeptSizes() As Integer
+    Friend myVolumeMatrix(,) As Integer
     Private myTransformedVolumeMatrix(,) As Integer
     Private myAverageFlow As Integer
-    Private myCostMatrix(,) As Double
+    Friend myCostMatrix(,) As Double
     Private RandomRow As New Random
-    Private myFacilityMatrix(,) As Integer 'Matrix displaying the field of tiles and empty spaces
+    Friend myFacilityMatrix(,) As Integer 'Matrix displaying the field of tiles and empty spaces
     Private myAssignedTiles(,) As Boolean 'Does this space have a tile in it?
     Private myTermiteOwnedTile(,) As Boolean 'Is a termite in the process of moving this tile?
     Private myTermites() As Termites 'Agents for moving the tiles
@@ -29,6 +33,8 @@
     Private myNumFrozenDepts As Integer = 0
     Private myGravStart As Integer
     Private TransformVDC As Integer
+
+    Private facilityEvaluator As New FacilityEvaluator()
 
     Private Structure Termites
         Dim VertDirection As Integer 'How far up/down should I go each turn?
@@ -63,49 +69,8 @@
         Dim NumRelations As Integer
     End Structure
 
-    Private Function AverageFlowValue()
-        Dim i, j, avgflow, flowcounter, flowsum As Integer
-
-        flowcounter = 0
-        flowsum = 0
-        For i = 1 To myNumDepartments
-            For j = 1 To myNumDepartments
-                If myTransformedVolumeMatrix(i, j) > 0 Then
-                    flowsum = flowsum + myTransformedVolumeMatrix(i, j)
-                    flowcounter = flowcounter + 1
-                End If
-            Next
-        Next
-
-        avgflow = Math.Round(flowsum / flowcounter)
-        Return avgflow
-    End Function
-    Private Function CentroidCalculator(ByVal rows As Integer, ByVal columns As Integer)
-        Dim i, j, k As Integer
-        Dim Centroids(myNumDepartments, 1) As Double
-        Dim RowSums, ColumnSums As Integer
-        RowSums = 0
-        ColumnSums = 0
-
-        For k = 1 To myNumDepartments
-            For i = 0 To rows - 1
-                For j = 0 To columns - 1
-                    If myFacilityMatrix(i, j) = k Then
-                        RowSums = RowSums + i
-                        ColumnSums = ColumnSums + j
-                    End If
-                Next
-            Next
-            Centroids(k, 0) = RowSums / myDeptSizes(k)
-            Centroids(k, 1) = ColumnSums / myDeptSizes(k)
-            RowSums = 0
-            ColumnSums = 0
-        Next
-        Return Centroids
-    End Function
-    
-    Private Sub ContigHelper(ByVal row As Integer, ByVal column As Integer, ByVal dept As Integer, ByVal rows As Integer, ByVal columns As Integer)
-        If row < 0 Or Rows <= row Or column < 0 Or Columns <= column Then
+    Private Sub ContigHelper(row As Integer, column As Integer, dept As Integer, rows As Integer, columns As Integer)
+        If row < 0 Or rows <= row Or column < 0 Or columns <= column Then
             Return
         ElseIf myFacilityMatrix(row, column) <> -1 * dept Then
             Return
@@ -115,16 +80,12 @@
             ContigHelper(row + 1, column, dept, rows, columns)
             ContigHelper(row, column - 1, dept, rows, columns)
             ContigHelper(row, column + 1, dept, rows, columns)
-            'ContigHelper(row - 1, column - 1, dept)
-            'ContigHelper(row + 1, column - 1, dept)
-            'ContigHelper(row - 1, column + 1, dept)
-            'ContigHelper(row + 1, column + 1, dept)
         End If
     End Sub
     'Termite sets his tile down
     Private Sub DropTile(ByVal X As Integer, ByVal Y As Integer, ByVal TermiteNumber As Integer)
-        Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0), _
-                                              myTileColors(myTermites(TermiteNumber).TileDept, 1), _
+        Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0),
+                                              myTileColors(myTermites(TermiteNumber).TileDept, 1),
                                               myTileColors(myTermites(TermiteNumber).TileDept, 2))
         myTermiteOwnedTile(X, Y) = False
         myFacilityMatrix(X, Y) = myTermites(TermiteNumber).TileDept
@@ -133,7 +94,7 @@
         myTermites(TermiteNumber).HasTile = False
         myTermites(TermiteNumber).TileDept = Nothing
     End Sub
-    
+
     Private Function FlowFinder()
         Dim i, j, k As Integer
         Dim FlowRelation(myNumDepartments) As FlowStats
@@ -145,12 +106,6 @@
 
         For j = 1 To myNumDepartments
             For i = 1 To myNumDepartments
-                'If i = j Then
-                '    i = i + 1
-                'End If
-                'If i > myNumDepartments Then
-                '    Exit For
-                'End If
                 If myTransformedVolumeMatrix(j, i) > 0 Then
                     FlowRelation(j).Flows(i) = FlowRelation(j).Flows(i) + myTransformedVolumeMatrix(j, i) / myCostMatrix(j, i)
                 End If
@@ -180,8 +135,8 @@
         Return FlowRelation
     End Function
     Private Sub FreezeDeptMotion(ByVal dept As Integer, ByVal rows As Integer, ByVal columns As Integer)
-        For i = 0 To Rows - 1
-            For j = 0 To Columns - 1
+        For i = 0 To rows - 1
+            For j = 0 To columns - 1
                 If myFacilityMatrix(i, j) = dept Then
                     myTermiteOwnedTile(i, j) = True
                 End If
@@ -195,8 +150,12 @@
     End Sub
     'Creates the facility field, places tiles randomly across the field
     Private Function GenerateFacilitySwarm()
+        'Generates rows and columns proportionally larger than the
+        'acutal size of the facility to allow empty space for
+        'the execution of the algorithm
         Dim Rows As Integer = Math.Round(Math.Sqrt(2 * (myDeptRowsColumns(0) ^ 2)))
         Dim Columns As Integer = Math.Round(Math.Sqrt(2 * (myDeptRowsColumns(1) ^ 2)))
+
         If TxtRows.Text <> "" Then
             Integer.TryParse(TxtRows.Text, Rows)
         End If
@@ -294,21 +253,21 @@
             'Termite must not look outside of facility field boundaries
             If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) AndAlso myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) <= rows - 1 Then
                 If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) AndAlso myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) <= columns - 1 Then
-                    If myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0), _
+                    If myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0),
                                         myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)) = myTermites(TermiteNumber).TileDept Then
                         For j = 0 To 8
-                            If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) AndAlso _
+                            If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) AndAlso
                                 myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) <= rows - 1 Then
-                                If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) AndAlso _
+                                If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) AndAlso
                                     myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) <= columns - 1 Then
-                                    If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0), _
+                                    If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0),
                                                        myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)) = False Then
                                         ClosestFound = True
                                         Dim X, Y As Integer
                                         X = myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0)
                                         Y = myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)
-                                        Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0), _
-                                        myTileColors(myTermites(TermiteNumber).TileDept, 1), _
+                                        Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0),
+                                        myTileColors(myTermites(TermiteNumber).TileDept, 1),
                                         myTileColors(myTermites(TermiteNumber).TileDept, 2))
                                         myTermites(TermiteNumber).ColumnPos = Y
                                         myTermites(TermiteNumber).RowPos = X
@@ -335,29 +294,38 @@
     Private Sub GreedyTermiteMethodToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GreedyTermiteMethodToolStripMenuItem.Click
         Dim Rows As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(0) ^ 2))
         Dim Columns As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(1) ^ 2))
+
         If TxtRows.Text <> "" Then
             Integer.TryParse(TxtRows.Text, Rows)
         End If
+
         If TxtColumns.Text <> "" Then
             Integer.TryParse(TxtColumns.Text, Columns)
         End If
+
         ReleaseTheTermites(Math.Round(myDeptRowsColumns(0) * myDeptRowsColumns(1) * 1.5), Rows, Columns)
+
         Dim ContigIndicator As Boolean
         Dim TotalContig
         Dim VDCP As Integer
         ReDim myFrozenDepts(myNumDepartments)
         ReDim myCountdFrznDepts(myNumDepartments)
+
         Do
             ReorganizationMethod1(Rows, Columns)
+
             For i = 1 To myNumDepartments
                 ContigIndicator = SingleDeptContig(i, Rows, Columns)
+
                 If ContigIndicator = True Then
                     FreezeDeptMotion(i, Rows, Columns)
                 End If
             Next
+
             TotalContig = TestContig(Rows, Columns)
         Loop Until TotalContig = True
-        VDCP = VDCProduct(Rows, Columns)
+
+        VDCP = facilityEvaluator.VolumeDistanceCostProduct(myNumDepartments, myFacilityMatrix, myVolumeMatrix, myCostMatrix, myDeptSizes)
         MessageBox.Show(VDCP.ToString("################.00"))
 
     End Sub
@@ -387,47 +355,6 @@
                 Checked(i + 1, j + 1) = True
             Next
             a = 0
-            'rand = RandomRow.Next(0, 100)
-            'If myLoopCounter > myGravStart AndAlso myLoopCounter < myGravStart * 2 Then
-            '    If rand < 25 Then
-            '        SearchOrder(0, 0) = 1
-            '        SearchOrder(0, 1) = 1
-            '        SearchOrder(1, 0) = 1
-            '        SearchOrder(1, 1) = 0
-            '        SearchOrder(2, 0) = 0
-            '        SearchOrder(2, 1) = 1
-            '        SearchOrder(3, 0) = 0
-            '        SearchOrder(3, 1) = 0
-            '        SearchOrder(4, 0) = -1
-            '        SearchOrder(4, 1) = 1
-            '        SearchOrder(5, 0) = 1
-            '        SearchOrder(5, 1) = -1
-            '        SearchOrder(6, 0) = 0
-            '        SearchOrder(6, 1) = -1
-            '        SearchOrder(7, 0) = -1
-            '        SearchOrder(7, 1) = 0
-            '        SearchOrder(8, 0) = -1
-            '        SearchOrder(8, 1) = -1
-            '    End If
-            'End If
-            'a = 0
-            'If myLoopCounter >= myGravStart * 2 Then
-            '    For i = 0 To 2
-            '        For j = 0 To 2
-            '            Checked(i, j) = False
-            '        Next
-            '    Next
-
-            '    For a = 0 To 8
-            '        Do
-            '            i = RandomRow.Next(0, 3) - 1
-            '            j = RandomRow.Next(0, 3) - 1
-            '            SearchOrder(a, 0) = RandomRow.Next(0, 3) - 1
-            '            SearchOrder(a, 1) = RandomRow.Next(0, 3) - 1
-            '        Loop Until Checked(i + 1, j + 1) = False
-            '        Checked(i + 1, j + 1) = True
-            '    Next
-            'End If
         End If
         If myLoopPhase = 2 Then
             a = 0
@@ -455,29 +382,29 @@
 
 
         'Say what the termites should do in the event they encounter a wall
-        If myTermites(i).ColumnPos + myTermites(i).HorizDirection < 0 Or _
-            myTermites(i).ColumnPos + myTermites(i).HorizDirection >= columns Or _
-            myTermites(i).RowPos + myTermites(i).VertDirection < 0 Or _
+        If myTermites(i).ColumnPos + myTermites(i).HorizDirection < 0 Or
+            myTermites(i).ColumnPos + myTermites(i).HorizDirection >= columns Or
+            myTermites(i).RowPos + myTermites(i).VertDirection < 0 Or
             myTermites(i).RowPos + myTermites(i).VertDirection >= rows Then
             Do
                 myTermites(i).HorizDirection = RandomRow.Next(0, upperlimit) - 2
                 myTermites(i).VertDirection = RandomRow.Next(0, upperlimit) - 2
-            Loop Until myTermites(i).ColumnPos + myTermites(i).HorizDirection > 0 AndAlso _
-                       myTermites(i).ColumnPos + myTermites(i).HorizDirection < columns AndAlso _
-                       myTermites(i).RowPos + myTermites(i).VertDirection > 0 AndAlso _
+            Loop Until myTermites(i).ColumnPos + myTermites(i).HorizDirection > 0 AndAlso
+                       myTermites(i).ColumnPos + myTermites(i).HorizDirection < columns AndAlso
+                       myTermites(i).RowPos + myTermites(i).VertDirection > 0 AndAlso
                        myTermites(i).RowPos + myTermites(i).VertDirection < rows
         End If
 
-        If myFixedDeptTileArray(myTermites(i).RowPos + myTermites(i).VertDirection, _
+        If myFixedDeptTileArray(myTermites(i).RowPos + myTermites(i).VertDirection,
                                  myTermites(i).ColumnPos + myTermites(i).HorizDirection) = True Then
             Do
                 myTermites(i).HorizDirection = RandomRow.Next(0, upperlimit) - 2
                 myTermites(i).VertDirection = RandomRow.Next(0, upperlimit) - 2
-            Loop Until myTermites(i).ColumnPos + myTermites(i).HorizDirection > 0 AndAlso _
-                       myTermites(i).ColumnPos + myTermites(i).HorizDirection < columns AndAlso _
-                       myTermites(i).RowPos + myTermites(i).VertDirection > 0 AndAlso _
-                       myTermites(i).RowPos + myTermites(i).VertDirection < rows AndAlso _
-                       myFixedDeptTileArray(myTermites(i).RowPos + myTermites(i).VertDirection, _
+            Loop Until myTermites(i).ColumnPos + myTermites(i).HorizDirection > 0 AndAlso
+                       myTermites(i).ColumnPos + myTermites(i).HorizDirection < columns AndAlso
+                       myTermites(i).RowPos + myTermites(i).VertDirection > 0 AndAlso
+                       myTermites(i).RowPos + myTermites(i).VertDirection < rows AndAlso
+                       myFixedDeptTileArray(myTermites(i).RowPos + myTermites(i).VertDirection,
                                  myTermites(i).ColumnPos + myTermites(i).HorizDirection) = False
         End If
     End Sub
@@ -616,8 +543,8 @@
         Next
 
         Dim PopUp As String = "Basic Facility Stats" & vbCrLf
-        PopUp = PopUp & "No. of Departments: " & numDepartments.ToString & vbCrLf & _
-            "No. of Rows: " & FacilityRows & vbCrLf & "No. of Columns: " & FacilityColumns & vbCrLf & _
+        PopUp = PopUp & "No. of Departments: " & numDepartments.ToString & vbCrLf &
+            "No. of Rows: " & FacilityRows & vbCrLf & "No. of Columns: " & FacilityColumns & vbCrLf &
             "Department Sizes: " & vbCrLf
 
         For i = 0 To Math.Round(numDepartments / 2) - 1
@@ -642,14 +569,6 @@
                 myTransformedVolumeMatrix(j, i) = (myVolumeMatrix(j, i) ^ 2) / ((myDeptSizes(j) + myDeptSizes(i)) / 2)
             Next
         Next
-        'myAverageFlow = AverageFlowValue()
-        'i = 1
-        'j = 1
-        'Do
-        '    myTransformedVolumeMatrix(i, j) = myAverageFlow
-        '    i = i + 1
-        '    j = j + 1
-        'Loop While i <= myNumDepartments
         ReDim myFlows(myNumDepartments)
         myFlows = FlowFinder()
         MessageBox.Show(PopUp)
@@ -695,9 +614,9 @@
         TxtRatio.Left = TxtRows.Left
         LblRatio.Left = TxtRows.Left - LblRatio.Width - 3
         TxtPhase1Decay.Left = TxtColumns.Left
-        lblPhase1Decay.Left = TxtColumns.Left - lblPhase1Decay.Width - 3
-        txtPhase2Decay.Left = TxtRows.Left
-        lblPhase2Decay.Left = TxtRows.Left - lblPhase2Decay.Width - 3
+        LblPhase1Decay.Left = TxtColumns.Left - LblPhase1Decay.Width - 3
+        TxtPhase2Decay.Left = TxtRows.Left
+        LblPhase2Decay.Left = TxtRows.Left - LblPhase2Decay.Width - 3
         TxtGravStart.Left = TxtColumns.Left
         LblGravStart.Left = TxtColumns.Left - LblGravStart.Width - 3
         TxtReps.Left = TxtRows.Left
@@ -734,7 +653,7 @@
                     Me.Controls.Add(Tile(i, j))
                     RowCounter = RowCounter + 25
                 End If
-                Tile(i, j).BackColor = color.FromArgb(myTileColors(myFacilityMatrix(i, j), 0), myTileColors(myFacilityMatrix(i, j), 1), _
+                Tile(i, j).BackColor = Color.FromArgb(myTileColors(myFacilityMatrix(i, j), 0), myTileColors(myFacilityMatrix(i, j), 1),
                                                       myTileColors(myFacilityMatrix(i, j), 2))
                 Tile(i, j).Text = myFacilityMatrix(i, j).ToString
                 Tile(i, j).Refresh()
@@ -866,24 +785,19 @@
 
         For i = 0 To NumTermites - 1
             myTermites(i).HasTile = False
-            myTermites(i).ColumnPos = RandomRow.Next(0, Columns)
-            myTermites(i).RowPos = RandomRow.Next(0, Rows)
+            myTermites(i).ColumnPos = RandomRow.Next(0, columns)
+            myTermites(i).RowPos = RandomRow.Next(0, rows)
             myTermites(i).TermiteType = RandomRow.Next(0, TypeRatio)
             If myTermites(i).TermiteType < TypeRatio - 1 Then
                 myTermites(i).TermiteType = 0
             Else
                 myTermites(i).TermiteType = 1
             End If
-            'myTermites(i).TermiteType = RandomRow.Next(0, 3)
-            'If myTermites(i).TermiteType < 2 Then
-            '    myTermites(i).TermiteType = 0
-            'Else
-            '    myTermites(i).TermiteType = 1
-            'End If
+
             If myFixedDeptTileArray(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
                 Do
-                    myTermites(i).ColumnPos = RandomRow.Next(0, Columns)
-                    myTermites(i).RowPos = RandomRow.Next(0, Rows)
+                    myTermites(i).ColumnPos = RandomRow.Next(0, columns)
+                    myTermites(i).RowPos = RandomRow.Next(0, rows)
                 Loop Until myFixedDeptTileArray(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
             End If
             myTermites(i).HorizDirection = RandomRow.Next(0, 5) - 2
@@ -998,154 +912,6 @@
 
         Next i
     End Sub
-    'Private Sub ReorganizationMethodScholar(ByVal rows As Integer, ByVal columns As Integer)
-    '    Dim i As Integer
-    '    Dim counter As Integer = 0
-    '    Dim SimilarAdjTileCount As Integer
-    '    Dim Roulette As Integer
-    '    Dim CurrentTile As Integer = 0
-    '    Dim upperlimit As Integer = 5
-    '    Dim HoardingTermite As Integer
-    '    If myLoopPhase = 1 Then
-    '        HoardingTermite = 0
-    '    Else
-    '        HoardingTermite = 1
-    '    End If
-
-    '    For i = HoardingTermite To myNumTermites - 1
-    '        For j = 0 To 9
-    '            NoLazinessAllowed(i)
-    '            MarchMarchMarch(i, rows, columns, upperlimit)
-    '            myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-    '            myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
-
-    '            If a termite didn't have a tile before but is now on a space with an un-owned tile, pick it up
-    '            If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
-    '                If myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
-    '                    If myTermites(i).HasTile = False Then
-    '                        SimilarAdjTileCount = SimilarTileCounter(i, rows, columns)
-    '                        Roulette = RandomRow.Next(0, SimilarAdjTileCount ^ 1.85 + 1)
-    '                        If Roulette = 0 Then
-    '                            If myTermites(i).SpecificTile = True Then
-    '                                If myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = myTermites(i).WhatSpecificTile Then
-    '                                    myTermites(i).HasTile = True
-    '                                    myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = True
-    '                                    myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
-    '                                    Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
-    '                                    Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-    '                                    myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
-    '                                    Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-    '                                    myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = 0
-    '                                End If
-    '                            ElseIf myTermites(i).SpecificTile = False Then
-    '                                myTermites(i).HasTile = True
-    '                                myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = True
-    '                                myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
-    '                                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
-    '                                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-    '                                myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
-    '                                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-    '                                myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = 0
-    '                            End If
-    '                        End If
-    '                    End If
-    '                End If
-    '            End If
-    '            If myTermites(i).HasTile = True Then
-    '                Exit For
-    '            End If
-    '        Next
-    '        If myTermites(i).TermiteType = 1 Then
-    '            Do
-    '                If myTermites(i).HasTile = True Then
-    '                    ScholarTermite(i, rows, columns)
-    '                    If myTermites(i).HasTile = False Then
-    '                        myTermites(i).HorizDirection = -1 * myTermites(i).HorizDirection
-    '                        myTermites(i).VertDirection = -1 * myTermites(i).VertDirection
-    '                        Exit Do
-    '                    End If
-    '                ElseIf myTermites(i).HasTile = False Then
-    '                    Exit Do
-    '                End If
-    '                NoLazinessAllowed(i)
-    '                MarchMarchMarch(i, rows, columns, upperlimit)
-    '                myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-    '                myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
-    '                counter = counter + 1
-    '                If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
-    '                If counter > 40 Then
-    '                    If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
-    '                        DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
-    '                    Else
-    '                        Do
-    '                            NoLazinessAllowed(i)
-    '                            MarchMarchMarch(i, rows, columns, upperlimit)
-    '                            myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-    '                            myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
-    '                        Loop Until myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
-    '                        DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
-    '                    End If
-    '                    Exit Do
-    '                End If
-    '            Loop Until myTermites(i).HasTile = False
-    '            counter = 0
-    '        Else
-    '            Do
-    '                If myTermites(i).HasTile = True Then
-    '                    GreedyTermite(i, rows, columns)
-    '                    If myTermites(i).HasTile = False Then
-    '                        myTermites(i).HorizDirection = -1 * myTermites(i).HorizDirection
-    '                        myTermites(i).VertDirection = -1 * myTermites(i).VertDirection
-    '                        Exit Do
-    '                    End If
-    '                ElseIf myTermites(i).HasTile = False Then
-    '                    Exit Do
-    '                End If
-    '                NoLazinessAllowed(i)
-    '                MarchMarchMarch(i, rows, columns, upperlimit)
-    '                myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-    '                myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
-    '                counter = counter + 1
-    '                If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
-    '                If counter > 40 Then
-    '                    If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
-    '                        DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
-    '                    Else
-    '                        Do
-    '                            NoLazinessAllowed(i)
-    '                            MarchMarchMarch(i, rows, columns, upperlimit)
-    '                            myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-    '                            myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
-    '                        Loop Until myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
-    '                        DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
-    '                    End If
-    '                    Exit Do
-    '                End If
-    '            Loop Until myTermites(i).HasTile = False
-    '            counter = 0
-    '            If i = myNumTermites - 1 Then
-    '                Dim a As Integer
-    '                a = 0
-    '            End If
-    '        End If
-
-    '        If myLoopPhase = 1 Then
-    '            If myLoopCounter >= myGravStart + Math.Round(myGravStart / 2) Then
-    '                If CurrentTile <> 0 Then
-    '                    If myFrozenDepts(CurrentTile) = False Then
-    '                        myFrozenDepts(CurrentTile) = SingleDeptContig(CurrentTile, rows, columns)
-    '                        If myFrozenDepts(CurrentTile) = True Then
-    '                            FreezeDeptMotion(CurrentTile, rows, columns)
-    '                        End If
-    '                    End If
-    '                End If
-    '            End If
-    '        End If
-    '    Next
-
-
-
-    'End Sub
 
     'This function describes the space immediately around the tile in question. Used for contiguity testing.
     Private Sub ReorganizationMethodScholar(ByVal rows As Integer, ByVal columns As Integer, ByVal numtermites As Integer)
@@ -1279,57 +1045,6 @@
         Dim f As Integer
         f = 2
     End Sub
-    'Private Sub ScholarTermite(ByVal TermiteNumber As Integer, ByVal rows As Integer, ByVal columns As Integer)
-    '    Dim i, j As Integer
-    '    Dim ClosestFound As Boolean = False
-    '    Dim ClosestEmpty(,) As Integer = LookAround()
-    '    Dim AdjCheck(,) As Integer = LookAround()
-    '    Dim rand As Integer = RandomRow.Next(0, 100)
-    '    'Check adjacent spaces for equivalent tiles
-
-    '    For i = 0 To 8
-    '        'Termite must not look outside of facility field boundaries
-    '        If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) AndAlso myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) <= rows - 1 Then
-    '            If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) AndAlso myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) <= columns - 1 Then
-    '                If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0), myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)) = True Then
-    '                    If rand <= 100 * (myFlows(myTermites(TermiteNumber).TileDept).Flows(myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0), _
-    '                            myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)))) / (myFlows(myTermites(TermiteNumber).TileDept).FlowSum) Then
-    '                        For j = 0 To 8
-    '                            If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) AndAlso _
-    '                                myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) <= rows - 1 Then
-    '                                If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) AndAlso _
-    '                                    myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) <= columns - 1 Then
-    '                                    If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0), _
-    '                                                       myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)) = False Then
-    '                                        ClosestFound = True
-    '                                        Dim X, Y As Integer
-    '                                        X = myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0)
-    '                                        Y = myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)
-    '                                        Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0), _
-    '                                        myTileColors(myTermites(TermiteNumber).TileDept, 1), _
-    '                                        myTileColors(myTermites(TermiteNumber).TileDept, 2))
-    '                                        myTermites(TermiteNumber).ColumnPos = Y
-    '                                        myTermites(TermiteNumber).RowPos = X
-    '                                        myTermiteOwnedTile(X, Y) = False
-    '                                        myFacilityMatrix(X, Y) = myTermites(TermiteNumber).TileDept
-    '                                        myAssignedTiles(X, Y) = True
-    '                                        Tile(X, Y).Text = myTermites(TermiteNumber).TileDept.ToString
-    '                                        myTermites(TermiteNumber).HasTile = False
-    '                                        myTermites(TermiteNumber).TileDept = Nothing
-    '                                        Exit For
-    '                                    End If
-    '                                End If
-    '                            End If
-    '                        Next
-    '                        If ClosestFound = True Then
-    '                            Exit For
-    '                        End If
-    '                    End If
-    '                End If
-    '            End If
-    '        End If
-    '    Next
-    'End Sub
 
     Private Sub ScholarTermite(ByVal TermiteNumber As Integer, ByVal rows As Integer, ByVal columns As Integer)
         Dim i, j As Integer
@@ -1345,21 +1060,21 @@
             If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) AndAlso myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) <= rows - 1 Then
                 If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) AndAlso myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) <= columns - 1 Then
                     If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0), myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)) = True Then
-                        If rand <= 100 * (myFlows(myTermites(TermiteNumber).TileDept).Flows(myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0), _
+                        If rand <= 100 * (myFlows(myTermites(TermiteNumber).TileDept).Flows(myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0),
                                 myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)))) / (myFlows(myTermites(TermiteNumber).TileDept).FlowSum) Then
                             For j = 0 To 8
-                                If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) AndAlso _
+                                If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) AndAlso
                                     myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) <= rows - 1 Then
-                                    If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) AndAlso _
+                                    If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) AndAlso
                                         myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) <= columns - 1 Then
-                                        If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0), _
+                                        If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0),
                                                            myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)) = False Then
                                             ClosestFound = True
                                             Dim X, Y As Integer
                                             X = myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0)
                                             Y = myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)
-                                            Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0), _
-                                            myTileColors(myTermites(TermiteNumber).TileDept, 1), _
+                                            Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0),
+                                            myTileColors(myTermites(TermiteNumber).TileDept, 1),
                                             myTileColors(myTermites(TermiteNumber).TileDept, 2))
                                             myTermites(TermiteNumber).ColumnPos = Y
                                             myTermites(TermiteNumber).RowPos = X
@@ -1370,24 +1085,6 @@
                                             myTermites(TermiteNumber).HasTile = False
                                             myTermites(TermiteNumber).TileDept = Nothing
                                             Exit For
-                                            'ElseIf myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0), _
-                                            '       myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)) <> myTermites(TermiteNumber).TileDept Or 15 Then
-                                            '    ClosestFound = True
-                                            '    Dim X, Y As Integer
-                                            '    X = myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0)
-                                            '    Y = myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)
-                                            '    TilePlaceHolder = myFacilityMatrix(X, Y)
-                                            '    Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0), _
-                                            '    myTileColors(myTermites(TermiteNumber).TileDept, 1), _
-                                            '    myTileColors(myTermites(TermiteNumber).TileDept, 2))
-                                            '    myTermites(TermiteNumber).ColumnPos = Y
-                                            '    myTermites(TermiteNumber).RowPos = X
-                                            '    myTermiteOwnedTile(X, Y) = False
-                                            '    myFacilityMatrix(X, Y) = myTermites(TermiteNumber).TileDept
-                                            '    myAssignedTiles(X, Y) = True
-                                            '    Tile(X, Y).Text = myTermites(TermiteNumber).TileDept.ToString
-                                            '    myTermites(TermiteNumber).TileDept = TilePlaceHolder
-                                            '    Exit For
                                         End If
                                     End If
                                 End If
@@ -1430,8 +1127,8 @@
         If TxtPhase1Decay.Text <> "" Then
             Integer.TryParse(TxtPhase1Decay.Text, Phase1Decay)
         End If
-        If txtPhase2Decay.Text <> "" Then
-            Integer.TryParse(txtPhase2Decay.Text, Phase2Decay)
+        If TxtPhase2Decay.Text <> "" Then
+            Integer.TryParse(TxtPhase2Decay.Text, Phase2Decay)
         End If
 
         Dim myPic As Bitmap
@@ -1582,12 +1279,7 @@
                         n = n + 1
                     End If
                 End If
-                'For i = 1 To myNumDepartments
-                '    ContigIndicator = SingleDeptContig(, Rows, Columns)
-                '    If ContigIndicator = False Then
-                '        TotalContig = False
-                '    End If
-                'Next
+
                 If TotalContig = True Then
                     For i = 0 To myDeptRowsColumns(0) - 1
                         For j = 0 To myDeptRowsColumns(1) - 1
@@ -1607,6 +1299,7 @@
                         End If
                     Next
                 End If
+
                 For i = 0 To myDeptRowsColumns(0) - 1
                     For j = 0 To myDeptRowsColumns(1) - 1
                         If myAssignedTiles(i, j) = False Then
@@ -1621,7 +1314,7 @@
             Dim VDC As Double
             Dim OBJValue As String
             Dim g As Graphics = Graphics.FromImage(myPic)
-            VDC = VDCProduct(Rows, Columns)
+            VDC = facilityEvaluator.VolumeDistanceCostProduct(myNumDepartments, myFacilityMatrix, myVolumeMatrix, myCostMatrix, myDeptSizes)
             TransformVDC = PicVDP.Height - (40 + Math.Round(240 * ((VDC - 30000) / 60000)))
             OBJValue = VDC.ToString & vbCrLf & RunTime.ToString
             g.FillRectangle(Brushes.Red, cycle * 30 + 30, TransformVDC - 2, 4, 4)
@@ -1644,7 +1337,7 @@
                 End If
                 If 0 <= myTermites(TermiteNumber).ColumnPos - j AndAlso myTermites(TermiteNumber).ColumnPos - j <= columns - 1 Then
                     If 0 <= myTermites(TermiteNumber).RowPos - i AndAlso myTermites(TermiteNumber).RowPos - i <= rows - 1 Then
-                        If myFacilityMatrix(myTermites(TermiteNumber).RowPos - i, myTermites(TermiteNumber).ColumnPos - j) = _
+                        If myFacilityMatrix(myTermites(TermiteNumber).RowPos - i, myTermites(TermiteNumber).ColumnPos - j) =
                             myFacilityMatrix(myTermites(TermiteNumber).RowPos, myTermites(TermiteNumber).ColumnPos) Then
                             NumberSimilarTilesAdj = NumberSimilarTilesAdj + 1
                         End If
@@ -1661,8 +1354,8 @@
         'Dim VacancyCounter As AdjacentTileStats
         Dim CornerOpen As Boolean = False
 
-        For row = 0 To Rows - 1
-            For column = 0 To Columns - 1
+        For row = 0 To rows - 1
+            For column = 0 To columns - 1
                 StartPoint(myFacilityMatrix(row, column), 0) = row
                 StartPoint(myFacilityMatrix(row, column), 1) = column
                 If myFacilityMatrix(row, column) = dept Then
@@ -1673,24 +1366,12 @@
         row = StartPoint(dept, 0)
         column = StartPoint(dept, 1)
         ContigHelper(row, column, dept, rows, columns)
-        For row = 0 To Rows - 1
-            For column = 0 To Columns - 1
+        For row = 0 To rows - 1
+            For column = 0 To columns - 1
                 If myFacilityMatrix(row, column) < 0 Then
                     myFacilityMatrix(row, column) = Math.Abs(myFacilityMatrix(row, column))
                     contig = False
                 End If
-                'If myFacilityMatrix(row, column) = 0 Then
-                '    VacancyCounter = VacancyFinder(dept, row, column)
-                '    If VacancyCounter.RelevantTiles = True Then
-                '        If VacancyCounter.Number = 8 Then
-                '            contig = False
-                '        End If
-                '        If VacancyCounter.Number = 7 AndAlso VacancyCounter.OpenCorner = True Then
-                '            contig = False
-                '        End If
-                '    End If
-
-                'End If
             Next
         Next
         Return contig
@@ -1744,8 +1425,8 @@
         Dim row, column, dept As Integer
         Dim contig As Boolean = True
 
-        For row = 0 To Rows - 1
-            For column = 0 To Columns - 1
+        For row = 0 To rows - 1
+            For column = 0 To columns - 1
                 StartPoint(myFacilityMatrix(row, column), 0) = row
                 StartPoint(myFacilityMatrix(row, column), 1) = column
                 myFacilityMatrix(row, column) = -1 * myFacilityMatrix(row, column)
@@ -1754,10 +1435,10 @@
         For dept = 1 To myNumDepartments
             row = StartPoint(dept, 0)
             column = StartPoint(dept, 1)
-            ContigHelper(row, column, dept, Rows, Columns)
+            ContigHelper(row, column, dept, rows, columns)
         Next
-        For row = 0 To Rows - 1
-            For column = 0 To Columns - 1
+        For row = 0 To rows - 1
+            For column = 0 To columns - 1
                 If myFacilityMatrix(row, column) < 0 Then
                     myFacilityMatrix(row, column) = Math.Abs(myFacilityMatrix(row, column))
                     contig = False
@@ -1781,7 +1462,7 @@
             Next
         Next
     End Sub
-    
+
     Private Function VacancyFinder(ByVal dept As Integer, ByVal row As Integer, ByVal column As Integer, ByVal rows As Integer, ByVal columns As Integer)
         Dim i, j As Integer
         Dim AdjInfo As AdjacentTileStats
@@ -1793,8 +1474,8 @@
                 If i = 0 AndAlso j = 0 Then
                     j = 1
                 End If
-                If 0 <= column - j AndAlso column - j <= Columns - 1 Then
-                    If 0 <= row - i AndAlso row - i <= Rows - 1 Then
+                If 0 <= column - j AndAlso column - j <= columns - 1 Then
+                    If 0 <= row - i AndAlso row - i <= rows - 1 Then
                         If myAssignedTiles(row - i, column - j) = True Then
                             AdjInfo.Number = AdjInfo.Number + 1
                         End If
@@ -1818,59 +1499,6 @@
         Return AdjInfo
     End Function
 
-    'Private Function DeptAffinityCounter(ByVal TermiteNumber As Integer, ByVal rows As Integer, ByVal columns As Integer)
-    '    Dim i, j, FlowScore As Integer
-    '    Dim NumUniqueAdjDepts As Integer = 0
-    '    'Dim Rows As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(0) ^ 2))
-    '    'Dim Columns As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(1) ^ 2))
-    '    Dim DeptCounted(myNumDepartments) As Boolean
-    '    FlowScore = 0
-
-    '    For i = 0 To myNumDepartments
-    '        DeptCounted(i) = False
-    '    Next
-    '    For i = -1 To 1
-    '        For j = -1 To 1
-    '            If i = 0 AndAlso j = 0 Then
-    '                j = 1
-    '            End If
-    '            If 0 <= myTermites(TermiteNumber).ColumnPos - j AndAlso myTermites(TermiteNumber).ColumnPos - j <= Columns - 1 Then
-    '                If 0 <= myTermites(TermiteNumber).RowPos - i AndAlso myTermites(TermiteNumber).RowPos - i <= Rows - 1 Then
-    '                    FlowScore = FlowScore + myVolumeMatrix(myFacilityMatrix(myTermites(TermiteNumber).RowPos, myTermites(TermiteNumber).ColumnPos), _
-    '                                myFacilityMatrix(myTermites(TermiteNumber).RowPos - i, myTermites(TermiteNumber).ColumnPos - j)) + _
-    '                        myVolumeMatrix(myFacilityMatrix(myTermites(TermiteNumber).RowPos - i, myTermites(TermiteNumber).ColumnPos - j), _
-    '                                myFacilityMatrix(myTermites(TermiteNumber).RowPos, myTermites(TermiteNumber).ColumnPos))
-    '                    If DeptCounted(myFacilityMatrix(myTermites(TermiteNumber).RowPos - i, myTermites(TermiteNumber).ColumnPos - j)) = False Then
-    '                        DeptCounted(myFacilityMatrix(myTermites(TermiteNumber).RowPos - i, myTermites(TermiteNumber).ColumnPos - j)) = True
-    '                        NumUniqueAdjDepts = NumUniqueAdjDepts + 1
-    '                    End If
-    '                End If
-    '            End If
-    '        Next
-    '    Next
-    '    FlowScore = Math.Round(FlowScore / NumUniqueAdjDepts)
-    '    Return FlowScore
-    'End Function
-    Private Function VDCProduct(ByVal rows As Integer, ByVal columns As Integer)
-        Dim Product As Double = 0.0
-        Dim i, j As Integer
-        Dim CompleteCycle As Boolean = False
-        Dim Centroids(,) As Double
-        Centroids = CentroidCalculator(rows, columns)
-        For i = 1 To myNumDepartments
-            For j = 1 To myNumDepartments
-                If i = j Then
-                    j = j + 1
-                End If
-                If j = myNumDepartments + 1 Then
-                    Exit For
-                End If
-                Product = Product + (Math.Abs(Centroids(j, 0) - Centroids(i, 0)) + Math.Abs(Centroids(j, 1) - Centroids(i, 1))) _
-                    * myVolumeMatrix(i, j) * myCostMatrix(i, j)
-            Next
-        Next
-        Return Product
-    End Function
     Private Sub VDPGraph(ByVal Pic As Bitmap)
         Dim i, k, n, yspace, tickcounter, ytickcounter As Integer
         Dim scaler, fontcounter As Double
@@ -1967,8 +1595,8 @@
         RandFlow = RandomRow.Next(1, Flows(myTermites(TermiteNumber).TileDept).FlowSum + 1)
         i = 1
         Do
-            If Flows(myTermites(TermiteNumber).TileDept).Flows(i) > 0 AndAlso _
-                ProgressiveFlowSum <= RandFlow AndAlso RandFlow <= ProgressiveFlowSum + _
+            If Flows(myTermites(TermiteNumber).TileDept).Flows(i) > 0 AndAlso
+                ProgressiveFlowSum <= RandFlow AndAlso RandFlow <= ProgressiveFlowSum +
                 Flows(myTermites(TermiteNumber).TileDept).Flows(i) Then
                 myTermites(TermiteNumber).VirtualTileDept = i
             End If
@@ -1976,84 +1604,5 @@
             i = i + 1
         Loop Until i = myNumDepartments + 1
     End Sub
- 
-    'Private Sub GreedyTermiteMethodToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GreedyTermiteMethodToolStripMenuItem.Click
-    '    Dim Rows As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(0) ^ 2))
-    '    Dim Columns As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(1) ^ 2))
-    '    ReleaseTheTermites(Math.Round(myDeptRowsColumns(0) * myDeptRowsColumns(1) * 1.5), Rows, Columns)
-    '    Dim myFlows(myNumDepartments) As FlowStats
-    '    myFlows = FlowFinder()
-    '    Dim ContigIndicator As Boolean
-    '    myLoopPhase = 1
-    '    Do
-    '        ReorganizationMethod1(Rows, Columns)
-    '        ContigIndicator = TestContig(Rows, Columns)
-    '    Loop Until ContigIndicator = True
-
-    'End Sub
-    
-
-    'Private Sub ScholarTermiteMethodToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ScholarTermiteMethodToolStripMenuItem.Click
-    '    Dim Rows As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(0) ^ 2))
-    '    Dim Columns As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(1) ^ 2))
-    '    Dim ContigIndicator As Boolean
-    '    ReleaseTheTermites()
-
-    '    Do
-    '        ReorganizationMethodScholar()
-    '        ContigIndicator = TestContig()
-    '    Loop Until ContigIndicator = True
-    'End Sub
-    
-
-    
-   
-
-    
-
-    'Private Sub ScholarTermiteMethodToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ScholarTermiteMethodToolStripMenuItem.Click
-    '    Dim Rows As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(0) ^ 2))
-    '    Dim Columns As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(1) ^ 2))
-    '    Dim ContigIndicator As Boolean
-    '    Dim TotalContig As Boolean
-    '    ReleaseTheTermites(Math.Round(myDeptRowsColumns(0) * myDeptRowsColumns(1) * 1.5), Rows, Columns)
-    '    Dim Pause As String = "Pause"
-    '    Dim EmptyCounter As Integer = 0
-    '    Dim LoopCounter As Integer = 0
-    '    Dim n As Integer = 0
-
-    '    For i = 0 To Rows - 1
-    '        For j = 0 To Columns - 1
-    '            If myFacilityMatrix(i, j) = 0 Then
-    '                'myFacilityMatrix(i, j) = myNumDepartments + 1
-    '                EmptyCounter = EmptyCounter + 1
-    '            End If
-    '        Next
-    '    Next
-    '    myDeptSizes(0) = EmptyCounter
-    '    Do
-    '        ReorganizationMethodScholar()
-    '        TotalContig = TestContig()
-    '        LoopCounter = LoopCounter + 1
-    '        If n < myNumTermites Then
-    '            If Math.IEEERemainder(LoopCounter, 30) = 0 Then
-    '                myTermites(n).TermiteType = 0
-    '                n = n + 1
-    '            End If
-    '        End If
-    '        If LoopCounter > 100 Then
-    '            For i = 1 To myNumDepartments
-    '                ContigIndicator = SingleDeptContig(i, Rows, Columns)
-    '                If ContigIndicator = True Then
-    '                    FreezeDeptMotion(i)
-    '                Else
-    '                    TotalContig = False
-    '                End If
-    '            Next
-    '        End If
-    '    Loop Until TotalContig = True
-
-    '    FreezeRowColumn()
-    'End Sub
 
 End Class
