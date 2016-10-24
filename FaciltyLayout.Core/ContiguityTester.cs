@@ -15,26 +15,27 @@ namespace FaciltyLayout.Core
             var rows = facility.GetLength(0);
             var columns = facility.GetLength(1);
 
-            for(var i = -1; i <= 1; i++)
+            var testPoints = new List<Tuple<int, int>>()
             {
-                var testRow = row - i;
+                Tuple.Create(-1,0),
+                Tuple.Create(0,-1),
+                Tuple.Create(0,1),
+                Tuple.Create(1,0),
+            };
 
-                for(var j = -1; j <= 1; j++)
-                {
-                    if (i == 0 && j == 0)
-                        j = 1; //Skip the tile we're on
+            foreach(var testPoint in testPoints)
+            {
+                var testRow = row - testPoint.Item1;
+                var testColumn = column - testPoint.Item2;
 
-                    var testColumn = column - j;
-
-                    if (0 <= testColumn && testColumn < columns)
-                        if (0 <= testRow && testRow < rows)
-                        {
-                            if (facility[testRow, testColumn] == dept)
-                                adjTilesContainSameDept = true;
-                            else if (deptSizes[dept] == 1)
-                                adjTilesContainSameDept = true;
-                        }
-                }
+                if (0 <= testColumn && testColumn < columns)
+                    if (0 <= testRow && testRow < rows)
+                    {
+                        if (facility[testRow, testColumn] == dept)
+                            adjTilesContainSameDept = true;
+                        else if (deptSizes[dept] == 1)
+                            adjTilesContainSameDept = true;
+                    }
             }
 
             return adjTilesContainSameDept;

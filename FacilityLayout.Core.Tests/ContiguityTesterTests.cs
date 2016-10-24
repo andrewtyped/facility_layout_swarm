@@ -79,5 +79,14 @@ namespace FacilityLayout.Core.Tests
             var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(2, 2, 3, _contiguousFacility, myDeptSizes);
             Assert.IsFalse(adjTilesContainSameDept);
         }
+
+        [Test]
+        public void Corner_Does_Not_Count_As_Adjacent_Tile()
+        {
+            int[] myDeptSizes = new int[] { 0, 5, 4 };
+
+            var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(2, 2, 2, _contiguousFacility, myDeptSizes);
+            Assert.IsFalse(adjTilesContainSameDept);
+        }
     }
 }
