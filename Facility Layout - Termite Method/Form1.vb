@@ -19,7 +19,7 @@ Public Class Form1
     Friend myFacilityMatrix(,) As Integer 'Matrix displaying the field of tiles and empty spaces
     Private myAssignedTiles(,) As Boolean 'Does this space have a tile in it?
     Private myTermiteOwnedTile(,) As Boolean 'Is a termite in the process of moving this tile?
-    Private myTermites() As Termites 'Agents for moving the tiles
+    Friend myTermites() As Termites 'Agents for moving the tiles
     Private myNumTermites As Integer
     Private myFlows() As FlowStats
     Private Tile(,) As Windows.Forms.Label
@@ -794,7 +794,7 @@ Public Class Form1
             If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
                 If myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
                     If myTermites(i).HasTile = False Then
-                        SimilarAdjTileCount = SimilarTileCounter(i, Rows, Columns)
+                        SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(myTermites(i).Position, myFacilityMatrix)
                         Roulette = RandomRow.Next(0, SimilarAdjTileCount ^ 2 + 1)
                         If myLoopCounter > ChaosStart AndAlso myLoopCounter < ChaosEnd Then
                             Roulette = 0
@@ -895,7 +895,7 @@ Public Class Form1
             If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
                 If myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
                     If myTermites(i).HasTile = False Then
-                        SimilarAdjTileCount = SimilarTileCounter(i, rows, columns)
+                        SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(myTermites(i).Position, myFacilityMatrix)
                         Roulette = RandomRow.Next(0, SimilarAdjTileCount ^ 1.75 + 1)
                         If Roulette = 0 Then
                             If myTermites(i).SpecificTile = True Then
@@ -1277,29 +1277,6 @@ Public Class Form1
             x = x + 1
         Loop Until cycle = numcycles
     End Sub
-    'This function counts how many tiles of the same type the termite is holding
-    'are adjacent to the termite's position
-    Private Function SimilarTileCounter(ByVal TermiteNumber As Integer, ByVal rows As Integer, ByVal columns As Integer)
-        Dim i, j As Integer
-        Dim NumberSimilarTilesAdj As Integer = 0
-
-        For i = -1 To 1
-            For j = -1 To 1
-                If i = 0 AndAlso j = 0 Then
-                    j = 1
-                End If
-                If 0 <= myTermites(TermiteNumber).ColumnPos - j AndAlso myTermites(TermiteNumber).ColumnPos - j <= columns - 1 Then
-                    If 0 <= myTermites(TermiteNumber).RowPos - i AndAlso myTermites(TermiteNumber).RowPos - i <= rows - 1 Then
-                        If myFacilityMatrix(myTermites(TermiteNumber).RowPos - i, myTermites(TermiteNumber).ColumnPos - j) =
-                            myFacilityMatrix(myTermites(TermiteNumber).RowPos, myTermites(TermiteNumber).ColumnPos) Then
-                            NumberSimilarTilesAdj = NumberSimilarTilesAdj + 1
-                        End If
-                    End If
-                End If
-            Next
-        Next
-        Return NumberSimilarTilesAdj
-    End Function
 
     Private Sub TextReader()
         myGravStart = 500

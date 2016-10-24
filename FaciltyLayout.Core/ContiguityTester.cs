@@ -9,24 +9,28 @@ namespace FaciltyLayout.Core
 {
     public class ContiguityTester
     {
+        /// <summary>
+        /// Represents the relative positions of tiles directly to the left, right, top, and bottom
+        /// of a given tile.
+        /// </summary>
+        private readonly List<Position> _adjacencyTestPositions = new List<Position>()
+        {
+            new Position(-1,0),
+            new Position(0,-1),
+            new Position(0,1),
+            new Position(1,0),
+        };
+
         public bool AdjacentTilesContainSameDepartment(int dept, int row, int column, int[,] facility, int[] deptSizes)
         {
             var adjTilesContainSameDept = false;
             var rows = facility.GetLength(0);
             var columns = facility.GetLength(1);
 
-            var testPoints = new List<Tuple<int, int>>()
+            foreach(var testPoint in _adjacencyTestPositions)
             {
-                Tuple.Create(-1,0),
-                Tuple.Create(0,-1),
-                Tuple.Create(0,1),
-                Tuple.Create(1,0),
-            };
-
-            foreach(var testPoint in testPoints)
-            {
-                var testRow = row - testPoint.Item1;
-                var testColumn = column - testPoint.Item2;
+                var testRow = row - testPoint.Row;
+                var testColumn = column - testPoint.Column;
 
                 if (0 <= testColumn && testColumn < columns)
                     if (0 <= testRow && testRow < rows)
@@ -39,6 +43,32 @@ namespace FaciltyLayout.Core
             }
 
             return adjTilesContainSameDept;
+        }
+
+        /// <summary>
+        /// Returns the number of adjacent tiles that are identical to the tile at the test position. 
+        /// A high value makes the tile less likely to move.
+        /// </summary>
+        public int CountAdjacentTilesOfSameDepartment(Position testPos, int[,] facility)
+        {
+            var numberAdjTiles = 0;
+            var rows = facility.GetLength(0);
+            var columns = facility.GetLength(1);
+
+            foreach(var adjPoint in _adjacencyTestPositions)
+            { 
+                var testRow = testPos.Row - adjPoint.Row;
+                var testColumn = testPos.Column - adjPoint.Column;
+
+                if (0 <= testColumn && testColumn < columns)
+                    if (0 <= testRow && testRow < rows)
+                    {
+                        if (facility[testRow, testColumn] == facility[testPos.Row, testPos.Column])
+                            numberAdjTiles++;
+                    }
+            }
+
+            return numberAdjTiles;
         }
 
         public bool AllDepartmentsAreContiguous(int[,] facility)

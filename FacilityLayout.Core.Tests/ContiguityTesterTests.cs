@@ -1,4 +1,5 @@
 ﻿using FaciltyLayout.Core;
+using FaciltyLayout.Core.Models;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -87,6 +88,26 @@ namespace FacilityLayout.Core.Tests
 
             var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(2, 2, 2, _contiguousFacility, myDeptSizes);
             Assert.IsFalse(adjTilesContainSameDept);
+        }
+
+
+        [TestCase(3,2,1)]
+        [TestCase(2,3,1)]
+        [TestCase(2,1,2)]
+        public void Counts_Number_Of_Similar_Tiles_Adjacent_To_A_Tile(int testRow, int testColumn, int expectedNumSimilarTiles)
+        {
+            Termites[] termites = new Termites[1]
+            {
+                new Termites()
+                {
+                    RowPos = testRow,
+                    ColumnPos = testColumn,
+                }
+            };
+
+            var numSimilarTiles = _contiguityTester.CountAdjacentTilesOfSameDepartment(termites[0].Position, _contiguousFacility);
+
+            Assert.AreEqual(expectedNumSimilarTiles, numSimilarTiles);
         }
     }
 }

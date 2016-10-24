@@ -44,5 +44,13 @@ namespace FaciltyLayout.Core.Models
         /// What type of termite am I?
         /// </summary>
         public int TermiteType { get; set; }
+
+        public Position Position
+        {
+            get
+            {
+                return new Position(RowPos, ColumnPos);
+            }
+        }
     }
 }
