@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FaciltyLayout.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,37 @@ namespace FaciltyLayout.Core
 {
     public class ContiguityTester
     {
+        public bool AdjacentTilesContainSameDepartment(int dept, int row, int column, int[,] facility, int[] deptSizes)
+        {
+            var adjTilesContainSameDept = false;
+            var rows = facility.GetLength(0);
+            var columns = facility.GetLength(1);
+
+            for(var i = -1; i <= 1; i++)
+            {
+                var testRow = row - i;
+
+                for(var j = -1; j <= 1; j++)
+                {
+                    if (i == 0 && j == 0)
+                        j = 1; //Skip the tile we're on
+
+                    var testColumn = column - j;
+
+                    if (0 <= testColumn && testColumn < columns)
+                        if (0 <= testRow && testRow < rows)
+                        {
+                            if (facility[testRow, testColumn] == dept)
+                                adjTilesContainSameDept = true;
+                            else if (deptSizes[dept] == 1)
+                                adjTilesContainSameDept = true;
+                        }
+                }
+            }
+
+            return adjTilesContainSameDept;
+        }
+
         public bool AllDepartmentsAreContiguous(int[,] facility)
         {
             var startPoints = new Dictionary<int, Tuple<int, int>>();

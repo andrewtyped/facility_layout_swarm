@@ -61,5 +61,23 @@ namespace FacilityLayout.Core.Tests
         {
             Assert.IsFalse(_contiguityTester.AllDepartmentsAreContiguous(_nonContiguousFacility));
         }
+
+        [Test]
+        public void Detects_If_Adjacent_Tiles_Contain_Same_Department()
+        {
+            int[] myDeptSizes = new int[] { 0, 5, 4 };
+
+            var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(1, 3, 2, _contiguousFacility, myDeptSizes);
+            Assert.IsTrue(adjTilesContainSameDept);
+        }
+
+        [Test]
+        public void Detects_If_Adjacent_Tiles_Do_Not_Contain_Same_Department()
+        {
+            int[] myDeptSizes = new int[] { 0, 5, 4 };
+
+            var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(2, 2, 3, _contiguousFacility, myDeptSizes);
+            Assert.IsFalse(adjTilesContainSameDept);
+        }
     }
 }

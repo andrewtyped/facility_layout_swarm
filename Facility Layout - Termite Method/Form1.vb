@@ -1077,7 +1077,7 @@ Public Class Form1
         ReDim myCountdFrznDepts(myNumDepartments)
         Dim i, j, y As Integer
 
-        Dim adjinfo As AdjacentTileStats
+        Dim adjTilesContainSameDepartment As Boolean = False
         Dim Phase1Decay As Integer = 10
         Dim Phase2Decay As Integer = 10
         If TxtPhase1Decay.Text <> "" Then
@@ -1239,17 +1239,15 @@ Public Class Form1
                     For i = 0 To myDeptRowsColumns(0) - 1
                         For j = 0 To myDeptRowsColumns(1) - 1
                             If myAssignedTiles(i, j) = False Then
-                                adjinfo = VacancyFinder(myTermites(0).TileDept, i, j, myDeptRowsColumns(0), myDeptRowsColumns(1))
-                                If myDeptSizes(myTermites(0).TileDept) = 1 Then
-                                    adjinfo.ContigTiles = True ' a special case statement for when a dept has just one tile
-                                End If
-                                If adjinfo.ContigTiles = True Then
+                                adjTilesContainSameDepartment = contiguityTester.AdjacentTilesContainSameDepartment(myTermites(0).TileDept, i, j, myFacilityMatrix, myDeptSizes)
+
+                                If adjTilesContainSameDepartment Then
                                     DropTile(i, j, 0)
                                     Exit For
                                 End If
                             End If
                         Next
-                        If adjinfo.ContigTiles = True Then
+                        If adjTilesContainSameDepartment Then
                             Exit For
                         End If
                     Next
@@ -1263,7 +1261,7 @@ Public Class Form1
                         End If
                     Next
                 Next
-            Loop Until TotalContig = True AndAlso adjinfo.ContigTiles = True
+            Loop Until TotalContig = True AndAlso adjTilesContainSameDepartment
             StopTime = Now
             RunTime = StopTime.Subtract(StartTime)
             Dim VDC As Double
@@ -1318,42 +1316,6 @@ Public Class Form1
             Next
         Next
     End Sub
-
-    Private Function VacancyFinder(ByVal dept As Integer, ByVal row As Integer, ByVal column As Integer, ByVal rows As Integer, ByVal columns As Integer)
-        Dim i, j As Integer
-        Dim AdjInfo As AdjacentTileStats
-        AdjInfo.Number = 0
-        AdjInfo.OpenCorner = False
-        AdjInfo.ContigTiles = False
-        For i = -1 To 1
-            For j = -1 To 1
-                If i = 0 AndAlso j = 0 Then
-                    j = 1
-                End If
-                If 0 <= column - j AndAlso column - j <= columns - 1 Then
-                    If 0 <= row - i AndAlso row - i <= rows - 1 Then
-                        If myAssignedTiles(row - i, column - j) = True Then
-                            AdjInfo.Number = AdjInfo.Number + 1
-                        End If
-                        If i <> 0 Or j <> 0 Then
-                            If myAssignedTiles(row - i, column - j) = False Then
-                                AdjInfo.OpenCorner = True
-                            End If
-                        End If
-                        If myFacilityMatrix(row - i, column - j) = dept Then
-                            AdjInfo.RelevantTiles = True
-                        End If
-                        If (i = 0 AndAlso j = 0) Or (i = 0 AndAlso j <> 0) Or (i <> 0 AndAlso j = 0) Then
-                            If myFacilityMatrix(row - i, column - j) = dept Then
-                                AdjInfo.ContigTiles = True
-                            End If
-                        End If
-                    End If
-                End If
-            Next
-        Next
-        Return AdjInfo
-    End Function
 
     Private Sub VDPGraph(ByVal Pic As Bitmap)
         Dim i, k, n, yspace, tickcounter, ytickcounter As Integer

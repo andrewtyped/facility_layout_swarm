@@ -8,9 +8,6 @@ namespace FaciltyLayout.Core.Models
 {
     public struct AdjacentTileStats
     {
-        public int Number { get; set; }
-        public bool OpenCorner { get; set; }
-        public bool RelevantTiles { get; set; }
         public bool ContigTiles { get; set; }
     }
 }
