@@ -12,7 +12,7 @@ Public Class Form1
     Friend myFixedDeptLocations(,) As Integer 'Where are the fixed tiles located on the facility field?
     Friend myDeptSizes() As Integer
     Friend myVolumeMatrix(,) As Integer
-    Private myTransformedVolumeMatrix(,) As Integer
+    Friend myTransformedVolumeMatrix(,) As Integer
     Private myAverageFlow As Integer
     Friend myCostMatrix(,) As Double
     Private RandomRow As New Random
@@ -21,7 +21,7 @@ Public Class Form1
     Private myTermiteOwnedTile(,) As Boolean 'Is a termite in the process of moving this tile?
     Friend myTermites() As Termites 'Agents for moving the tiles
     Private myNumTermites As Integer
-    Private myFlows() As FlowStats
+    Friend myFlows() As FlowStats
     Private Tile(,) As Windows.Forms.Label
     Private TileRefreshCounter As Integer = 0
     Private myTileColors(,) As Integer
