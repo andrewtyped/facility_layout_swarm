@@ -6,10 +6,10 @@ Imports FaciltyLayout.Core.Models
 Public Class Form1
     Private myDataFile As String
     Friend myNumDepartments As Integer
-    Private myDeptRowsColumns(1) As Integer
-    Private myFixedDeptIndicator() As Boolean 'Is this a fixed department?
+    Friend myDeptRowsColumns(1) As Integer
+    Friend myFixedDeptIndicator() As Boolean 'Is this a fixed department?
     Private myFixedDeptTileArray(,) As Boolean 'Does this space hold a tile belonging to a fixed department?
-    Private myFixedDeptLocations(,) As Integer 'Where are the fixed tiles located on the facility field?
+    Friend myFixedDeptLocations(,) As Integer 'Where are the fixed tiles located on the facility field?
     Friend myDeptSizes() As Integer
     Friend myVolumeMatrix(,) As Integer
     Private myTransformedVolumeMatrix(,) As Integer
@@ -389,7 +389,7 @@ Public Class Form1
             Loop Until myTermites(i).HorizDirection <> 0 Or myTermites(i).VertDirection <> 0
         End If
     End Sub
-    Private Sub OpenToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OpenToolStripMenuItem.Click
+    Friend Sub OpenToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OpenToolStripMenuItem.Click
         ofdLoadSetup.InitialDirectory = "C:/"
         ofdLoadSetup.Title = "Load Facility Data"
         ofdLoadSetup.FileName = ""
@@ -399,10 +399,14 @@ Public Class Form1
         Dim datafile As String
         If ofdLoadSetup.ShowDialog() = DialogResult.OK Then
             datafile = ofdLoadSetup.FileName
+            Dim result As String = Configure_App(datafile)
+            MessageBox.Show(result)
         End If
+    End Sub
 
+    Friend Function Configure_App(pathToConfigFile As String) As String
         Dim msg As String = ""
-        myDataFile = datafile
+        myDataFile = pathToConfigFile
         Dim objDataFile As New System.IO.StreamReader(myDataFile)
         Dim numDepartments As Integer
         Dim RowsColumns(1) As String
@@ -527,8 +531,10 @@ Public Class Form1
         Next
         ReDim myFlows(myNumDepartments)
         myFlows = FlowFinder()
-        MessageBox.Show(PopUp)
-    End Sub
+
+        Return PopUp
+    End Function
+
     Private Sub RandomizeTiles()
         myFacilityMatrix = GenerateFacilitySwarm()
 
