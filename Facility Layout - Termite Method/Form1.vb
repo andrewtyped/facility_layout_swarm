@@ -4,7 +4,6 @@ Imports FaciltyLayout.Core.Models
 
 <Assembly: InternalsVisibleTo("FacilityLayout.Core.Tests")>
 Public Class Form1
-    Private myDataFile As String
     Friend myNumDepartments As Integer
     Friend myDeptRowsColumns(1) As Integer
     Friend myFixedDeptIndicator() As Boolean 'Is this a fixed department?
@@ -405,130 +404,42 @@ Public Class Form1
     End Sub
 
     Friend Function Configure_App(pathToConfigFile As String) As String
-        Dim msg As String = ""
-        myDataFile = pathToConfigFile
-        Dim objDataFile As New System.IO.StreamReader(myDataFile)
-        Dim numDepartments As Integer
-        Dim RowsColumns(1) As String
-        Dim FacilityRows As Integer
-        Dim FacilityColumns As Integer
-        Dim DeptSplitter() As String
-        Dim i, j, k As Integer
 
-        msg = objDataFile.ReadLine()
-        msg = objDataFile.ReadLine()
-        msg = objDataFile.ReadLine()
-        msg = msg.Replace("/", ",")
-        DeptSplitter = msg.Split(",") 'the replace and split methods allow ignorance of txt file comments
-        numDepartments = Integer.Parse(DeptSplitter(0))
-        myNumDepartments = numDepartments
-        msg = objDataFile.ReadLine
-        msg = msg.Replace("/", ",")
-        RowsColumns = msg.Split(",")
-        FacilityRows = Integer.Parse(RowsColumns(0))
-        FacilityColumns = Integer.Parse(RowsColumns(1))
-        myDeptRowsColumns(0) = FacilityRows
-        myDeptRowsColumns(1) = FacilityColumns
+        Dim facilityStatsRepository = New FacilityStatsRepository(pathToConfigFile)
+        Dim facilityStats = facilityStatsRepository.Load()
 
-        Dim DeptSize(numDepartments) As Integer 'How big is the dept?
-        Dim DeptFixed(numDepartments) As Boolean ' Is the Dept fixed in one location?
-        Dim FixedDeptLocations(3, 0) As Integer 'If so, where?
-        Dim DeptStats(5) As String
-        j = 0
-        DeptFixed(0) = False
-
-        msg = objDataFile.ReadLine()
-
-        For i = 0 To numDepartments - 1
-            msg = objDataFile.ReadLine()
-            DeptStats = msg.Split(",")
-            DeptSize(i + 1) = Integer.Parse(DeptStats(0))
-            DeptFixed(i + 1) = False
-            If DeptStats(1) = 1 Then
-                DeptFixed(i + 1) = True
-                j = j + 1
-                ReDim Preserve FixedDeptLocations(3, j - 1)
-                For k = 0 To 3
-                    FixedDeptLocations(k, j - 1) = Integer.Parse(DeptStats(k + 2))
-                Next
-            End If
-        Next
-
-        msg = objDataFile.ReadLine
-        Dim VolumeMatrixSplitter(numDepartments - 1) As String
-        Dim CostMatrixSplitter(numDepartments - 1) As String
-        Dim VolumeMatrix(numDepartments, numDepartments) As Integer
-        Dim CostMatrix(numDepartments, numDepartments) As Double
-
-        For i = 1 To numDepartments
-            msg = objDataFile.ReadLine()
-            msg = msg.Replace("/", ",")
-            VolumeMatrixSplitter = msg.Split(",")
-            For k = 0 To numDepartments - 1
-                VolumeMatrix(i, k + 1) = Integer.Parse(VolumeMatrixSplitter(k))
-            Next
-        Next
-
-
-        msg = objDataFile.ReadLine
-        For i = 0 To numDepartments
-            CostMatrix(i, 0) = Integer.MaxValue
-            CostMatrix(0, i) = Integer.MaxValue
-        Next
-
-        For i = 1 To numDepartments
-            msg = objDataFile.ReadLine
-            msg = msg.Replace("/", ",")
-            CostMatrixSplitter = msg.Split(",")
-            For k = 0 To numDepartments - 1
-                CostMatrix(i, k + 1) = Double.Parse(CostMatrixSplitter(k))
-            Next
-        Next
-
-        i = 1
-        j = 1
-
-        myDeptSizes = DeptSize
-        myFixedDeptIndicator = DeptFixed
-        myFixedDeptLocations = FixedDeptLocations
-        myVolumeMatrix = VolumeMatrix
-        myCostMatrix = CostMatrix
-
-        ReDim myTransformedVolumeMatrix(myNumDepartments, myNumDepartments)
-        For i = 1 To numDepartments
-            For j = i To numDepartments
-                myTransformedVolumeMatrix(i, j) = (VolumeMatrix(i, j) + VolumeMatrix(j, i)) / 2
-                myTransformedVolumeMatrix(j, i) = myTransformedVolumeMatrix(i, j)
-            Next
-        Next
+        myNumDepartments = facilityStats.DepartmentCount
+        myDeptRowsColumns = facilityStats.FacilitySize.ToArray()
+        myDeptSizes = facilityStats.DepartmentSizes
+        myFixedDeptIndicator = facilityStats.IsDepartmentLocationFixed
+        myFixedDeptLocations = facilityStats.FixedDepartmentLocations
+        myVolumeMatrix = facilityStats.VolumeMatrix
+        myCostMatrix = facilityStats.CostMatrix
+        myTransformedVolumeMatrix = facilityStats.WeightedVolumeMatrix
 
         Dim PopUp As String = "Basic Facility Stats" & vbCrLf
-        PopUp = PopUp & "No. of Departments: " & numDepartments.ToString & vbCrLf &
-            "No. of Rows: " & FacilityRows & vbCrLf & "No. of Columns: " & FacilityColumns & vbCrLf &
+        PopUp = PopUp & "No. of Departments: " & facilityStats.DepartmentCount.ToString & vbCrLf &
+            "No. of Rows: " & facilityStats.FacilitySize.Rows & vbCrLf & "No. of Columns: " & facilityStats.FacilitySize.Columns & vbCrLf &
             "Department Sizes: " & vbCrLf
 
-        For i = 0 To Math.Round(numDepartments / 2) - 1
-            PopUp = PopUp & DeptSize(i + 1).ToString & ", "
+        For i = 0 To Math.Round(facilityStats.DepartmentCount / 2) - 1
+            PopUp = PopUp & facilityStats.DepartmentSizes(i + 1).ToString & ", "
         Next
         PopUp = PopUp & vbCrLf
-        For i = Math.Round(numDepartments / 2) To numDepartments - 1
-            PopUp = PopUp & DeptSize(i + 1).ToString & ", "
+        For i = Math.Round(facilityStats.DepartmentCount / 2) To facilityStats.DepartmentCount - 1
+            PopUp = PopUp & facilityStats.DepartmentSizes(i + 1).ToString & ", "
         Next
         PopUp = PopUp & vbCrLf & "Fixed Departments: "
 
         Dim x As Integer = 0
 
-        For i = 0 To numDepartments
-            If DeptFixed(i) = True Then
+        For i = 0 To facilityStats.DepartmentCount
+            If facilityStats.IsDepartmentLocationFixed(i) = True Then
                 PopUp = PopUp & x.ToString & ", "
             End If
             x = x + 1
         Next
-        For j = 1 To myNumDepartments
-            For i = 1 To myNumDepartments
-                myTransformedVolumeMatrix(j, i) = (myVolumeMatrix(j, i) ^ 2) / ((myDeptSizes(j) + myDeptSizes(i)) / 2)
-            Next
-        Next
+
         ReDim myFlows(myNumDepartments)
         myFlows = FlowFinder()
 

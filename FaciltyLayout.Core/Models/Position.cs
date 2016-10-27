@@ -34,7 +34,7 @@ namespace FaciltyLayout.Core.Models
 
         public static bool operator != (Position pos1, Position pos2)
         {
-            return pos1.Row != pos2.Row || pos1.Column == pos2.Column;
+            return pos1.Row != pos2.Row || pos1.Column != pos2.Column;
         }
     }
 }
