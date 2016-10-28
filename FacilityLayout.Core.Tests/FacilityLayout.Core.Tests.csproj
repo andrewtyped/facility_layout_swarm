@@ -49,6 +49,7 @@
     <Compile Include="ContiguityTesterTests.cs" />
     <Compile Include="DiscoveryTests.cs" />
     <Compile Include="FacilityEvaluatorTests.cs" />
+    <Compile Include="FacilityLayoutTests.cs" />
     <Compile Include="FacilityRepositoryTests.cs" />
     <Compile Include="PortedDiscoveryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

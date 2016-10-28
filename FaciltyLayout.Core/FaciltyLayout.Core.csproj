@@ -48,6 +48,7 @@
     <Compile Include="Models\AdjacentTileStats.cs" />
     <Compile Include="Models\Department.cs" />
     <Compile Include="Models\DepartmentStats.cs" />
+    <Compile Include="Models\FacilityLayoutModel.cs" />
     <Compile Include="Models\FacilityStats.cs" />
     <Compile Include="Models\FlowStats.cs" />
     <Compile Include="Models\Position.cs" />

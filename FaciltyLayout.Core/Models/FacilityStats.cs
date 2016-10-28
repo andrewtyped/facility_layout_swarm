@@ -140,6 +140,11 @@ namespace FaciltyLayout.Core.Models
             return flowStats;
         }
 
+        public Department GetDepartment(int id)
+        {
+            return Departments.First(d => d.Id == id);
+        }
+
         public override string ToString()
         {
             var sb = new StringBuilder();

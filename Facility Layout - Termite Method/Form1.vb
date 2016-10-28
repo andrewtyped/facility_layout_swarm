@@ -6,17 +6,11 @@ Imports FaciltyLayout.Core.Models
 Public Class Form1
     Friend myNumDepartments As Integer
     Friend myDeptRowsColumns(1) As Integer
-    Friend myFixedDeptIndicator() As Boolean 'Is this a fixed department?
-    Private myFixedDeptTileArray(,) As Boolean 'Does this space hold a tile belonging to a fixed department?
-    Friend myFixedDeptLocations(,) As Integer 'Where are the fixed tiles located on the facility field?
     Friend myDeptSizes() As Integer
     Friend myVolumeMatrix(,) As Integer
-    Friend myTransformedVolumeMatrix(,) As Integer
-    Private myAverageFlow As Integer
     Friend myCostMatrix(,) As Double
     Private RandomRow As New Random
     Friend myFacilityMatrix(,) As Integer 'Matrix displaying the field of tiles and empty spaces
-    Private myAssignedTiles(,) As Boolean 'Does this space have a tile in it?
     Private myTermiteOwnedTile(,) As Boolean 'Is a termite in the process of moving this tile?
     Friend myTermites() As Termites 'Agents for moving the tiles
     Private myNumTermites As Integer
@@ -24,9 +18,7 @@ Public Class Form1
     Private Tile(,) As Windows.Forms.Label
     Private TileRefreshCounter As Integer = 0
     Private myTileColors(,) As Integer
-    Private myVacancyCounter As Integer = 0
     Private myLoopCounter = 0
-    Private myNumContigDeptCounter = 0
     Private myFrozenDepts() As Boolean
     Private myCountdFrznDepts() As Boolean
     Private myLoopPhase As Integer
@@ -37,14 +29,16 @@ Public Class Form1
     Private facilityEvaluator As New FacilityEvaluator()
     Private contiguityTester As New ContiguityTester()
 
+    Friend FacilityStats As FacilityStats
+    Friend FacilityLayoutModel As FacilityLayoutModel
+
     'Termite sets his tile down
     Private Sub DropTile(ByVal X As Integer, ByVal Y As Integer, ByVal TermiteNumber As Integer)
         Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0),
                                               myTileColors(myTermites(TermiteNumber).TileDept, 1),
                                               myTileColors(myTermites(TermiteNumber).TileDept, 2))
         myTermiteOwnedTile(X, Y) = False
-        myFacilityMatrix(X, Y) = myTermites(TermiteNumber).TileDept
-        myAssignedTiles(X, Y) = True
+        FacilityLayoutModel.SetTile(X, Y, myTermites(TermiteNumber).TileDept)
         Tile(X, Y).Text = myTermites(TermiteNumber).TileDept.ToString
         myTermites(TermiteNumber).HasTile = False
         myTermites(TermiteNumber).TileDept = Nothing
@@ -65,98 +59,15 @@ Public Class Form1
         End If
     End Sub
     'Creates the facility field, places tiles randomly across the field
-    Friend Function GenerateFacilitySwarm()
-        'Generates rows and columns proportionally larger than the
-        'acutal size of the facility to allow empty space for
-        'the execution of the algorithm
-        Dim Rows As Integer = Math.Round(Math.Sqrt(2 * (myDeptRowsColumns(0) ^ 2)))
-        Dim Columns As Integer = Math.Round(Math.Sqrt(2 * (myDeptRowsColumns(1) ^ 2)))
+    Friend Function GenerateFacilitySwarm(facilityStats As FacilityStats) As FacilityLayoutModel
+        Dim facilityLayout As FacilityLayoutModel = New FacilityLayoutModel(facilityStats)
+        facilityLayout.InitializeDepartmentTiles()
 
-        If TxtRows.Text <> "" Then
-            Integer.TryParse(TxtRows.Text, Rows)
-        End If
-        If TxtColumns.Text <> "" Then
-            Integer.TryParse(TxtColumns.Text, Columns)
-        End If
-        Dim FacilityMatrix(Rows - 1, Columns - 1) As Integer
-        Dim TileAssigned(Rows - 1, Columns - 1) As Boolean
-        Dim TileSelectRow As Integer
-        Dim TileSelectColumn As Integer
-        Dim i, j, k, m, FixedDept As Integer
-        Dim DeptTilesPlaced As Integer
-        FixedDept = 0
-
-        'Initialize the matrix with all 0's, indicate all as unassigned
-        For i = 0 To Rows - 1
-            For j = 0 To Columns - 1
-                FacilityMatrix(i, j) = 0
-                TileAssigned(i, j) = False
-            Next
-        Next
-
-        'Place fixed departments first and mark their tiles as taken
-        For i = 0 To myNumDepartments - 1
-            If myFixedDeptIndicator(i + 1) = True Then
-                For k = myFixedDeptLocations(0, FixedDept) To myFixedDeptLocations(2, FixedDept)
-                    For m = myFixedDeptLocations(1, FixedDept) To myFixedDeptLocations(3, FixedDept)
-                        FacilityMatrix(k - 1, m - 1) = i + 1
-                        TileAssigned(k - 1, m - 1) = True
-                    Next
-                Next
-                FixedDept = FixedDept + 1
-            End If
-        Next
-
-        'Starting at department 1, select a random tile and assign it to dept 1. If this process
-        'would be done for a dept that is already fixed, skip that department
-        For i = 0 To myNumDepartments - 1
-            If myFixedDeptIndicator(i + 1) = True Then
-                i = i + 1
-                If myNumDepartments - 1 < i Then
-                    Exit For
-                End If
-            End If
-            DeptTilesPlaced = 0
-            Do
-                TileSelectRow = RandomRow.Next(0, Rows)
-                TileSelectColumn = RandomRow.Next(0, Columns)
-                If TileAssigned(TileSelectRow, TileSelectColumn) = True Then
-                    Do
-                        TileSelectRow = RandomRow.Next(0, Rows)
-                        TileSelectColumn = RandomRow.Next(0, Columns)
-                    Loop Until TileAssigned(TileSelectRow, TileSelectColumn) = False
-                End If
-                FacilityMatrix(TileSelectRow, TileSelectColumn) = i + 1
-                DeptTilesPlaced = DeptTilesPlaced + 1
-                TileAssigned(TileSelectRow, TileSelectColumn) = True
-            Loop Until DeptTilesPlaced = myDeptSizes(i + 1)
-        Next
-
-        Dim temp(Rows - 1, Columns - 1) As Boolean
-        myAssignedTiles = temp
-        'ReDim myAssignedTiles(Rows - 1, Columns - 1)
-        For i = 0 To Rows - 1
-            For j = 0 To Columns - 1
-                myAssignedTiles(i, j) = TileAssigned(i, j)
-            Next
-        Next
-
-        ReDim myFixedDeptTileArray(Rows - 1, Columns - 1)
-        For i = 0 To Rows - 1
-            For j = 0 To Columns - 1
-                If myFixedDeptIndicator(FacilityMatrix(i, j)) = True Then
-                    myFixedDeptTileArray(i, j) = True
-                Else
-                    myFixedDeptTileArray(i, j) = False
-                End If
-            Next
-        Next
-        'Output is a matrix representing position of all tiles and empty spaces on the field
-        Return FacilityMatrix
+        Return facilityLayout
     End Function
     'Animates the facility field with a series of randomly colored labels
     Private Sub GenerateTileSwarmToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GenerateTileSwarmToolStripMenuItem.Click
-        RandomizeTiles()
+        RandomizeTiles(FacilityStats)
     End Sub
     'Termite drops tile in nearest empty space if an equivalent tile is located in an adjacent space
     Private Sub GreedyTermite(ByVal TermiteNumber As Integer, ByVal rows As Integer, ByVal columns As Integer)
@@ -176,7 +87,7 @@ Public Class Form1
                                 myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) <= rows - 1 Then
                                 If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) AndAlso
                                     myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) <= columns - 1 Then
-                                    If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0),
+                                    If FacilityLayoutModel.IsTileAssigned(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0),
                                                        myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)) = False Then
                                         ClosestFound = True
                                         Dim X, Y As Integer
@@ -188,8 +99,7 @@ Public Class Form1
                                         myTermites(TermiteNumber).ColumnPos = Y
                                         myTermites(TermiteNumber).RowPos = X
                                         myTermiteOwnedTile(X, Y) = False
-                                        myFacilityMatrix(X, Y) = myTermites(TermiteNumber).TileDept
-                                        myAssignedTiles(X, Y) = True
+                                        FacilityLayoutModel.SetTile(X, Y, myTermites(TermiteNumber).TileDept)
                                         Tile(X, Y).Text = myTermites(TermiteNumber).TileDept.ToString
                                         myTermites(TermiteNumber).HasTile = False
                                         myTermites(TermiteNumber).TileDept = Nothing
@@ -311,7 +221,7 @@ Public Class Form1
                        myTermites(i).RowPos + myTermites(i).VertDirection < rows
         End If
 
-        If myFixedDeptTileArray(myTermites(i).RowPos + myTermites(i).VertDirection,
+        If FacilityLayoutModel.IsTileFixed(myTermites(i).RowPos + myTermites(i).VertDirection,
                                  myTermites(i).ColumnPos + myTermites(i).HorizDirection) = True Then
             Do
                 myTermites(i).HorizDirection = RandomRow.Next(0, upperlimit) - 2
@@ -320,7 +230,7 @@ Public Class Form1
                        myTermites(i).ColumnPos + myTermites(i).HorizDirection < columns AndAlso
                        myTermites(i).RowPos + myTermites(i).VertDirection > 0 AndAlso
                        myTermites(i).RowPos + myTermites(i).VertDirection < rows AndAlso
-                       myFixedDeptTileArray(myTermites(i).RowPos + myTermites(i).VertDirection,
+                       FacilityLayoutModel.IsTileFixed(myTermites(i).RowPos + myTermites(i).VertDirection,
                                  myTermites(i).ColumnPos + myTermites(i).HorizDirection) = False
         End If
     End Sub
@@ -367,25 +277,24 @@ Public Class Form1
     Friend Function Configure_App(pathToConfigFile As String) As String
 
         Dim facilityStatsRepository = New FacilityStatsRepository(pathToConfigFile)
-        Dim facilityStats = facilityStatsRepository.Load()
+        Dim myFacilityStats = facilityStatsRepository.Load()
 
-        myNumDepartments = facilityStats.DepartmentCount
-        myDeptRowsColumns = facilityStats.FacilitySize.ToArray()
-        myDeptSizes = facilityStats.DepartmentSizes
-        myFixedDeptIndicator = facilityStats.IsDepartmentLocationFixed
-        myFixedDeptLocations = facilityStats.FixedDepartmentLocations
-        myVolumeMatrix = facilityStats.VolumeMatrix
-        myCostMatrix = facilityStats.CostMatrix
-        myTransformedVolumeMatrix = facilityStats.WeightedVolumeMatrix
-        myFlows = facilityStats.Flows
+        myNumDepartments = myFacilityStats.DepartmentCount
+        myDeptRowsColumns = myFacilityStats.FacilitySize.ToArray()
+        myDeptSizes = myFacilityStats.DepartmentSizes
+        myVolumeMatrix = myFacilityStats.VolumeMatrix
+        myCostMatrix = myFacilityStats.CostMatrix
+        myFlows = myFacilityStats.Flows
+        FacilityStats = myFacilityStats
 
-        Dim PopUp As String = facilityStats.ToString()
+        Dim PopUp As String = myFacilityStats.ToString()
 
         Return PopUp
     End Function
 
-    Private Sub RandomizeTiles()
-        myFacilityMatrix = GenerateFacilitySwarm()
+    Private Sub RandomizeTiles(facilityStats As FacilityStats)
+        FacilityLayoutModel = GenerateFacilitySwarm(facilityStats)
+        myFacilityMatrix = FacilityLayoutModel.Facility
 
         Dim objMatrixFile As New System.IO.StreamWriter("C:\Users\Andrew\Documents\IE 590\FacilitySwarm.txt")
         Dim strMatrix As String = Nothing
@@ -432,7 +341,6 @@ Public Class Form1
         LblGravStart.Left = TxtColumns.Left - LblGravStart.Width - 3
         TxtReps.Left = TxtRows.Left
         LblReps.Left = TxtRows.Left - LblReps.Width - 3
-        PicVDP.Left = LblGravStart.Left
 
         Dim RowCounter As Integer = 10
         Dim ColumnCounter As Integer = 30
@@ -479,7 +387,7 @@ Public Class Form1
         i = 0
         upperlimit = 5
         For x = 0 To rows - 1
-            If myAssignedTiles(x, columns - 1) = True Then
+            If FacilityLayoutModel.IsTileAssigned(x, columns - 1) = True Then
                 myTermites(i).RowPos = x
                 myTermites(i).ColumnPos = columns - 1
                 myTermites(i).HasTile = True
@@ -487,15 +395,14 @@ Public Class Form1
                 myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                 'Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-                myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = 0
+                FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                 i = i + 1
             End If
         Next
 
         For y = 0 To columns - 2
-            If myAssignedTiles(rows - 1, y) = True Then
+            If FacilityLayoutModel.IsTileAssigned(rows - 1, y) = True Then
                 myTermites(i).RowPos = rows - 1
                 myTermites(i).ColumnPos = y
                 myTermites(i).HasTile = True
@@ -503,9 +410,8 @@ Public Class Form1
                 myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                 'Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-                myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = 0
+                FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                 i = i + 1
             End If
         Next
@@ -605,11 +511,11 @@ Public Class Form1
                 myTermites(i).TermiteType = 1
             End If
 
-            If myFixedDeptTileArray(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
+            If FacilityLayoutModel.IsTileFixed(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
                 Do
                     myTermites(i).ColumnPos = RandomRow.Next(0, columns)
                     myTermites(i).RowPos = RandomRow.Next(0, rows)
-                Loop Until myFixedDeptTileArray(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
+                Loop Until FacilityLayoutModel.IsTileFixed(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
             End If
             myTermites(i).HorizDirection = RandomRow.Next(0, 5) - 2
             myTermites(i).VertDirection = RandomRow.Next(0, 5) - 2
@@ -624,9 +530,8 @@ Public Class Form1
             If myTermites(i).HasTile = True Then
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-                myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = 0
+                FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
             End If
         Next
     End Sub
@@ -646,7 +551,7 @@ Public Class Form1
             myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
 
             'If a termite didn't have a tile before but is now on a space with an un-owned tile, pick it up
-            If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
+            If FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
                 If myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
                     If myTermites(i).HasTile = False Then
                         SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(myTermites(i).Position, myFacilityMatrix)
@@ -662,9 +567,8 @@ Public Class Form1
                                     myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
                                     Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
                                     Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                                    myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                                     'Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-                                    myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = 0
+                                    FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                                 End If
                             ElseIf myTermites(i).SpecificTile = False Then
                                 myTermites(i).HasTile = True
@@ -672,9 +576,8 @@ Public Class Form1
                                 myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
                                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
                                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                                myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                                 'Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-                                myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = 0
+                                FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                             End If
                         End If
                     End If
@@ -702,7 +605,7 @@ Public Class Form1
                 counter = counter + 1
                 'If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
                 If counter > 40 Then
-                    If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
+                    If FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
                         DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                     Else
                         Do
@@ -710,7 +613,7 @@ Public Class Form1
                             MarchMarchMarch(i, Rows, Columns, 5)
                             myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
                             myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
-                        Loop Until myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
+                        Loop Until FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                         DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                     End If
                     Exit Do
@@ -747,7 +650,7 @@ Public Class Form1
             myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
 
             'If a termite didn't have a tile before but is now on a space with an un-owned tile, pick it up
-            If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
+            If FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
                 If myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
                     If myTermites(i).HasTile = False Then
                         SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(myTermites(i).Position, myFacilityMatrix)
@@ -760,8 +663,7 @@ Public Class Form1
                                     myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
                                     Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
                                     Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                                    myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
-                                    myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = 0
+                                    FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                                 End If
                             ElseIf myTermites(i).SpecificTile = False Then
                                 myTermites(i).HasTile = True
@@ -769,8 +671,7 @@ Public Class Form1
                                 myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
                                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
                                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                                myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
-                                myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = 0
+                                FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                             End If
                         End If
                     End If
@@ -797,7 +698,7 @@ Public Class Form1
                     counter = counter + 1
                     'If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
                     If counter > 40 Then
-                        If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
+                        If FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
                             DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                         Else
                             Do
@@ -805,7 +706,7 @@ Public Class Form1
                                 MarchMarchMarch(i, rows, columns, upperlimit)
                                 myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
                                 myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
-                            Loop Until myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
+                            Loop Until FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                             DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                         End If
                         Exit Do
@@ -831,7 +732,7 @@ Public Class Form1
                     counter = counter + 1
                     'If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
                     If counter > 40 Then
-                        If myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
+                        If FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
                             DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                         Else
                             Do
@@ -839,7 +740,7 @@ Public Class Form1
                                 MarchMarchMarch(i, rows, columns, upperlimit)
                                 myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
                                 myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
-                            Loop Until myAssignedTiles(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
+                            Loop Until FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                             DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                         End If
                         Exit Do
@@ -870,7 +771,7 @@ Public Class Form1
             'Termite must not look outside of facility field boundaries
             If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) AndAlso myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) <= rows - 1 Then
                 If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) AndAlso myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) <= columns - 1 Then
-                    If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0), myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)) = True Then
+                    If FacilityLayoutModel.IsTileAssigned(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0), myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)) = True Then
                         If rand <= 100 * (myFlows(myTermites(TermiteNumber).TileDept).Flows(myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0),
                                 myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)))) / (myFlows(myTermites(TermiteNumber).TileDept).FlowSum) Then
                             For j = 0 To 8
@@ -878,7 +779,7 @@ Public Class Form1
                                     myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) <= rows - 1 Then
                                     If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) AndAlso
                                         myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) <= columns - 1 Then
-                                        If myAssignedTiles(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0),
+                                        If FacilityLayoutModel.IsTileAssigned(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0),
                                                            myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)) = False Then
                                             ClosestFound = True
                                             Dim X, Y As Integer
@@ -890,8 +791,7 @@ Public Class Form1
                                             myTermites(TermiteNumber).ColumnPos = Y
                                             myTermites(TermiteNumber).RowPos = X
                                             myTermiteOwnedTile(X, Y) = False
-                                            myFacilityMatrix(X, Y) = myTermites(TermiteNumber).TileDept
-                                            myAssignedTiles(X, Y) = True
+                                            FacilityLayoutModel.SetTile(X, Y, myTermites(TermiteNumber).TileDept)
                                             Tile(X, Y).Text = myTermites(TermiteNumber).TileDept.ToString
                                             myTermites(TermiteNumber).HasTile = False
                                             myTermites(TermiteNumber).TileDept = Nothing
@@ -942,10 +842,6 @@ Public Class Form1
             Integer.TryParse(TxtPhase2Decay.Text, Phase2Decay)
         End If
 
-        Dim myPic As Bitmap
-        myPic = New Bitmap(PicVDP.Width, PicVDP.Height)
-        VDPGraph(myPic)
-        PicVDP.Image = myPic
         TextReader()
         myLoopPhase = 1
         myLoopCounter = 0
@@ -961,7 +857,7 @@ Public Class Form1
         Do
             cycle = cycle + 1
             If cycle > 1 Then
-                RandomizeTiles()
+                RandomizeTiles(FacilityStats)
             End If
             myLoopPhase = 1
             myLoopCounter = 0
@@ -1093,7 +989,7 @@ Public Class Form1
                 If TotalContig = True Then
                     For i = 0 To myDeptRowsColumns(0) - 1
                         For j = 0 To myDeptRowsColumns(1) - 1
-                            If myAssignedTiles(i, j) = False Then
+                            If FacilityLayoutModel.IsTileAssigned(i, j) = False Then
                                 adjTilesContainSameDepartment = contiguityTester.AdjacentTilesContainSameDepartment(myTermites(0).TileDept, i, j, myFacilityMatrix, myDeptSizes)
 
                                 If adjTilesContainSameDepartment Then
@@ -1110,7 +1006,7 @@ Public Class Form1
 
                 For i = 0 To myDeptRowsColumns(0) - 1
                     For j = 0 To myDeptRowsColumns(1) - 1
-                        If myAssignedTiles(i, j) = False Then
+                        If FacilityLayoutModel.IsTileAssigned(i, j) = False Then
                             TotalContig = False
                             Exit For
                         End If
@@ -1121,12 +1017,8 @@ Public Class Form1
             RunTime = StopTime.Subtract(StartTime)
             Dim VDC As Double
             Dim OBJValue As String
-            Dim g As Graphics = Graphics.FromImage(myPic)
             VDC = facilityEvaluator.VolumeDistanceCostProduct(myNumDepartments, myFacilityMatrix, myVolumeMatrix, myCostMatrix, myDeptSizes)
-            TransformVDC = PicVDP.Height - (40 + Math.Round(240 * ((VDC - 30000) / 60000)))
             OBJValue = VDC.ToString & vbCrLf & RunTime.ToString
-            g.FillRectangle(Brushes.Red, cycle * 30 + 30, TransformVDC - 2, 4, 4)
-            PicVDP.Refresh()
             MessageBox.Show(OBJValue)
             Solutions(x) = VDC
             x = x + 1
@@ -1147,91 +1039,5 @@ Public Class Form1
                 Tile(i, j).Refresh()
             Next
         Next
-    End Sub
-
-    Private Sub VDPGraph(ByVal Pic As Bitmap)
-        Dim i, k, n, yspace, tickcounter, ytickcounter As Integer
-        Dim scaler, fontcounter As Double
-        Dim fontobj As Font
-        fontobj = New System.Drawing.Font("Arial", 8, FontStyle.Regular)
-        Dim JobFont As Font
-        JobFont = New System.Drawing.Font("Arial", 7, FontStyle.Regular)
-        Dim HeadFont As Font
-        HeadFont = New System.Drawing.Font("Arial", 12, FontStyle.Bold)
-        yspace = 30
-        tickcounter = 30
-        ytickcounter = 40
-        n = tickcounter
-        k = ytickcounter
-        'Set Scaling Constant
-        scaler = 1
-
-        'Define Picture Box Size
-        'PicVDP.Left = LblGravStart.Left
-        PicVDP.Visible = False
-
-        'Create Drawing Surface
-        For row As Integer = 0 To PicVDP.Width - 1
-            For col As Integer = 0 To PicVDP.Height - 1
-                Pic.SetPixel(row, col, Color.White)
-            Next
-        Next
-
-        PicVDP.Image = Pic
-        Dim g As Graphics = Graphics.FromImage(Pic)
-
-        'Draw Background Lines
-        For i = 0 To 9
-            g.DrawLine(Pens.LightGray, yspace + n, ytickcounter - 15, yspace + n, PicVDP.Height - 43)
-            n = n + tickcounter
-        Next
-        For i = 0 To 6
-            g.DrawLine(Pens.LightGray, yspace + 3, PicVDP.Height - 40 - k, PicVDP.Width - 15, PicVDP.Height - 40 - k)
-            k = k + ytickcounter
-        Next
-        n = tickcounter
-        k = ytickcounter
-
-        'Draw axes and ticks
-        g.DrawLine(Pens.Black, yspace, 10, yspace, PicVDP.Height - 40) 'y axis
-        g.DrawLine(Pens.Black, yspace, PicVDP.Height - 40, PicVDP.Width - 15, PicVDP.Height - 40) 'x axis
-
-        For i = 0 To 9
-            g.DrawLine(Pens.Black, yspace + n, PicVDP.Height - 37, yspace + n, PicVDP.Height - 43)
-            n = n + tickcounter
-        Next
-        For i = 0 To 7
-            g.DrawLine(Pens.Black, yspace - 3, PicVDP.Height - 40 - k, yspace + 3, PicVDP.Height - 40 - k)
-            k = k + ytickcounter
-        Next
-
-        'Draw Time Units on ticks
-        Dim fontstring As String
-        fontcounter = 0
-        n = 0
-
-        For i = 0 To 10
-            fontstring = ""
-            fontstring = fontcounter.ToString(fontstring)
-            g.DrawString(fontstring, fontobj, Brushes.Black, yspace + n - 3, PicVDP.Height - 35)
-            fontcounter = fontcounter + 1
-            n = n + tickcounter
-        Next
-        fontcounter = 30
-        k = 0
-        For i = 0 To 7
-            fontstring = ""
-            fontstring = fontcounter.ToString(fontstring) & "k"
-            g.DrawString(fontstring, fontobj, Brushes.Black, yspace - 25, PicVDP.Height - 50 - k)
-            fontcounter = fontcounter + 10
-            k = k + ytickcounter
-        Next
-        g.DrawString("Cycle Number", fontobj, Brushes.Black, (PicVDP.Width / 2) - 65, PicVDP.Height - 15)
-
-        'Draw Legend
-        g.DrawString("VDP Scores", HeadFont, Brushes.Black, (PicVDP.Width / 2) - 60, 5)
-        'Display Chart
-        PicVDP.Visible = True
-        g.Dispose()
     End Sub
 End Class

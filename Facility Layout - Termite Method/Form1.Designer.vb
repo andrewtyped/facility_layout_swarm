@@ -49,10 +49,8 @@ Partial Public Class Form1
         Me.TxtReps = New System.Windows.Forms.TextBox()
         Me.LblGravStart = New System.Windows.Forms.Label()
         Me.LblReps = New System.Windows.Forms.Label()
-        Me.PicVDP = New System.Windows.Forms.PictureBox()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.MenuStrip1.SuspendLayout()
-        CType(Me.PicVDP, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'MenuStrip1
@@ -93,25 +91,25 @@ Partial Public Class Form1
         'GenerateTileSwarmToolStripMenuItem
         '
         Me.GenerateTileSwarmToolStripMenuItem.Name = "GenerateTileSwarmToolStripMenuItem"
-        Me.GenerateTileSwarmToolStripMenuItem.Size = New System.Drawing.Size(202, 22)
+        Me.GenerateTileSwarmToolStripMenuItem.Size = New System.Drawing.Size(201, 22)
         Me.GenerateTileSwarmToolStripMenuItem.Text = "Generate Tile Swarm"
         '
         'ExportTileSwarmToolStripMenuItem
         '
         Me.ExportTileSwarmToolStripMenuItem.Name = "ExportTileSwarmToolStripMenuItem"
-        Me.ExportTileSwarmToolStripMenuItem.Size = New System.Drawing.Size(202, 22)
+        Me.ExportTileSwarmToolStripMenuItem.Size = New System.Drawing.Size(201, 22)
         Me.ExportTileSwarmToolStripMenuItem.Text = "Export Tile Swarm"
         '
         'GreedyTermiteMethodToolStripMenuItem
         '
         Me.GreedyTermiteMethodToolStripMenuItem.Name = "GreedyTermiteMethodToolStripMenuItem"
-        Me.GreedyTermiteMethodToolStripMenuItem.Size = New System.Drawing.Size(202, 22)
+        Me.GreedyTermiteMethodToolStripMenuItem.Size = New System.Drawing.Size(201, 22)
         Me.GreedyTermiteMethodToolStripMenuItem.Text = "Greedy Termite Method"
         '
         'ScholarTermiteMethodToolStripMenuItem
         '
         Me.ScholarTermiteMethodToolStripMenuItem.Name = "ScholarTermiteMethodToolStripMenuItem"
-        Me.ScholarTermiteMethodToolStripMenuItem.Size = New System.Drawing.Size(202, 22)
+        Me.ScholarTermiteMethodToolStripMenuItem.Size = New System.Drawing.Size(201, 22)
         Me.ScholarTermiteMethodToolStripMenuItem.Text = "Scholar Termite Method"
         '
         'ofdLoadSetup
@@ -246,20 +244,11 @@ Partial Public Class Form1
         Me.LblReps.TabIndex = 16
         Me.LblReps.Text = "Replicates"
         '
-        'PicVDP
-        '
-        Me.PicVDP.Location = New System.Drawing.Point(109, 138)
-        Me.PicVDP.Name = "PicVDP"
-        Me.PicVDP.Size = New System.Drawing.Size(363, 312)
-        Me.PicVDP.TabIndex = 17
-        Me.PicVDP.TabStop = False
-        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(484, 462)
-        Me.Controls.Add(Me.PicVDP)
         Me.Controls.Add(Me.LblReps)
         Me.Controls.Add(Me.LblGravStart)
         Me.Controls.Add(Me.TxtReps)
@@ -282,7 +271,6 @@ Partial Public Class Form1
         Me.Text = "Form1"
         Me.MenuStrip1.ResumeLayout(False)
         Me.MenuStrip1.PerformLayout()
-        CType(Me.PicVDP, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -313,7 +301,6 @@ Partial Public Class Form1
     Friend WithEvents TxtReps As System.Windows.Forms.TextBox
     Friend WithEvents LblGravStart As System.Windows.Forms.Label
     Friend WithEvents LblReps As System.Windows.Forms.Label
-    Friend WithEvents PicVDP As System.Windows.Forms.PictureBox
     Friend WithEvents Timer1 As System.Windows.Forms.Timer
 
 End Class

@@ -23,6 +23,8 @@ namespace FacilityLayout.Core.Tests
             pathToDataFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "SampleConfigFiles", "Kraft15_data.txt");
             _facilityLayoutForm = new Form1();
             _facilityLayoutForm.Configure_App(pathToDataFile);
+            _facilityLayoutForm.FacilityLayoutModel = _facilityLayoutForm.GenerateFacilitySwarm(_facilityLayoutForm.FacilityStats);
+            _facilityLayoutForm.myFacilityMatrix = _facilityLayoutForm.FacilityLayoutModel.Facility;
         }
 
         [Test]
@@ -56,38 +58,6 @@ namespace FacilityLayout.Core.Tests
             Assert.AreEqual(6, _facilityLayoutForm.myDeptSizes[13], "Dept 13 - unexpected size");
             Assert.AreEqual(19, _facilityLayoutForm.myDeptSizes[14], "Dept 14 - unexpected size");
             Assert.AreEqual(25, _facilityLayoutForm.myDeptSizes[15], "Dept 15 - unexpected size");
-        }
-
-        [Test]
-        public void Configure_App_Sets_Fixed_Department_Flags()
-        {
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[1], "Dept 1 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[2], "Dept 2 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[3], "Dept 3 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[4], "Dept 4 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[5], "Dept 5 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[6], "Dept 6 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[7], "Dept 7 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[8], "Dept 8 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[9], "Dept 9 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[10], "Dept 10 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[11], "Dept 11 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[12], "Dept 12 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[13], "Dept 13 - unexpected fixed indicator");
-            Assert.IsFalse(_facilityLayoutForm.myFixedDeptIndicator[14], "Dept 14 - unexpected fixed indicator");
-            Assert.IsTrue(_facilityLayoutForm.myFixedDeptIndicator[15], "Dept 15 - unexpected fixed indicator");
-        }
-
-        [Test]
-        public void Configure_App_Sets_Fixed_Department_Locations()
-        {
-            //Badly implemented - fixed dept location stores the upper left corner, width, and height of a single dept
-            Assert.AreEqual(1, _facilityLayoutForm.myFixedDeptLocations[0, 0]); //row
-            Assert.AreEqual(1, _facilityLayoutForm.myFixedDeptLocations[1, 0]); //column
-            Assert.AreEqual(5, _facilityLayoutForm.myFixedDeptLocations[2, 0]); //width
-            Assert.AreEqual(5, _facilityLayoutForm.myFixedDeptLocations[3, 0]); //height
-            Assert.AreEqual(4, _facilityLayoutForm.myFixedDeptLocations.GetLength(0));
-            Assert.AreEqual(1, _facilityLayoutForm.myFixedDeptLocations.GetLength(1));
         }
 
         [Test]
@@ -156,41 +126,6 @@ namespace FacilityLayout.Core.Tests
         }
 
         [Test]
-        public void Configure_App_Sets_Transformed_Volume_Matrix()
-        {
-            //The transformed volume matrix weights the flow of goods between depts by squaring the original value
-            //It's possible the app is doing this wrong - it overwrites a first pass which averages the flow both ways between
-            //each department and sets both directions to the same value
-            var expectedMatrix = new int[16, 16]
-            {
-                { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },   // filler
-                { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2880 }, //dept1
-                { 0,4608,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }, //dept2
-                { 0,0,0,0,180000,0,0,0,0,0,0,0,0,0,0,0 }, //dept3
-                { 0,0,0,0,0,0,0,0,0,0,90000,0,0,0,0,0 }, //dept4
-                { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,25714,0 }, //dept5
-                { 0,0,0,0,0,0,0,0,11520,0,0,0,0,0,0,0 }, //dept6
-                { 0,0,0,0,0,0,0,0,11520,0,0,0,0,0,0,0 }, //dept7
-                { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,720 }, //dept8
-                { 0,0,0,0,0,0,0,0,0,0,20571,0,0,0,0,0 }, //dept9
-                { 0,0,0,0,0,0,0,0,0,0,0,0,18000,0,0,0 }, //dept10
-                { 0,0,0,0,0,0,0,13166,0,0,0,0,0,0,0,0 }, //dept11
-                { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18000 }, //dept12
-                { 0,0,0,0,0,0,0,14865,0,0,0,0,0,0,0,0 }, //dept13
-                { 0,0,0,0,0,0,0,0,0,0,0,0,21176,0,0,0 }, //dept14
-                { 0,0,6,147,0,37,64,0,0,36,0,91,0,26,0,0 } //dept15
-            };
-
-            for (var i = 0; i < expectedMatrix.GetLength(0); i++)
-            {
-                for (var j = 0; j < expectedMatrix.GetLength(1); j++)
-                {
-                    Assert.AreEqual(expectedMatrix[i, j], _facilityLayoutForm.myTransformedVolumeMatrix[i, j], $"mismatch at index [{i},{j}]");
-                }
-            }
-        }
-
-        [Test]
         public void Configure_App_Sets_Flows()
         {
             //"FlowStats" are a struct which describe a department's relationship with all other departments.
@@ -219,6 +154,89 @@ namespace FacilityLayout.Core.Tests
                 CollectionAssert.AreEqual(expFlow.Flows, actualFlow.Flows, $"Flows mismatched at index [{i}]");
                 Assert.AreEqual(expFlow.FlowSum, actualFlow.FlowSum, $"Flowsum mismatched at index[{i}]");
                 Assert.AreEqual(expFlow.NumRelations, actualFlow.NumRelations, $"NumRelations mismatched at index [{i}]");
+            }
+        }
+
+        [Test]
+        public void Generate_Facility_Swarm_Sets_Size_Of_Algortihm_Space()
+        {
+            Assert.AreEqual(21, _facilityLayoutForm.myFacilityMatrix.GetLength(0));
+            Assert.AreEqual(21, _facilityLayoutForm.myFacilityMatrix.GetLength(1));
+        }
+
+        [Test]
+        public void Generate_Facility_Swarm_Places_All_Required_Department_Tiles()
+        {
+            var actualDepartmentTiles = new Dictionary<int, int>();
+            var facility = _facilityLayoutForm.myFacilityMatrix;
+
+            for(var i = 0; i < facility.GetLength(0); i++)
+            {
+                for(var j = 0; j < facility.GetLength(1); j++)
+                {
+                    var department = facility[i, j];
+                    int currentCount;
+                    actualDepartmentTiles.TryGetValue(department, out currentCount);
+                    actualDepartmentTiles[department] = currentCount + 1;
+                }
+            }
+
+            foreach(var department in _facilityLayoutForm.FacilityStats.Departments)
+            {
+                //0th filler department has no expected area
+                if(department.Id != 0)
+                    Assert.AreEqual(department.Area, actualDepartmentTiles[department.Id]);
+            }
+        }
+
+        [Test]
+        public void Generate_Facility_Swarm_Marks_Assigned_Tiles()
+        {
+            var facility = _facilityLayoutForm.myFacilityMatrix;
+
+            for (var i = 0; i < facility.GetLength(0); i++)
+            {
+                for (var j = 0; j < facility.GetLength(1); j++)
+                {
+                    var department = facility[i, j];
+                    var assigned = department != 0;
+
+                    Assert.AreEqual(assigned, _facilityLayoutForm.FacilityLayoutModel.IsTileAssigned(i, j));
+                }
+            }
+        }
+
+        [Test]
+        public void Generate_Facility_Swarm_Marks_Fixed_Tiles()
+        {
+            var facility = _facilityLayoutForm.myFacilityMatrix;
+            var facilityStats = _facilityLayoutForm.FacilityStats;
+
+            for (var i = 0; i < facility.GetLength(0); i++)
+            {
+                for (var j = 0; j < facility.GetLength(1); j++)
+                {
+                    var departmentId = facility[i, j];
+                    var department = facilityStats.GetDepartment(departmentId);
+
+                    Assert.AreEqual(department.IsLocationFixed, _facilityLayoutForm.FacilityLayoutModel.IsTileFixed(i, j));
+                }
+            }
+        }
+
+        [Test]
+        public void Generate_Facility_Swarm_Respects_Fixed_Department_Locations()
+        {
+            var facility = _facilityLayoutForm.myFacilityMatrix;
+            var fixedDeptLocations = _facilityLayoutForm.FacilityStats.FixedDepartmentLocations;
+            var fixedDepartmentId = _facilityLayoutForm.FacilityStats.Departments.Single(d => d.IsLocationFixed).Id;
+
+            for(int i = fixedDeptLocations[0,0]; i < fixedDeptLocations[2,0]; i++)
+            {
+                for(int j = fixedDeptLocations[1,0]; j < fixedDeptLocations[3,0]; j++)
+                {
+                    Assert.AreEqual(fixedDepartmentId, facility[i - 1, j - 1]);
+                }
             }
         }
 
