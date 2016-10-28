@@ -4,17 +4,11 @@ Imports FaciltyLayout.Core.Models
 
 <Assembly: InternalsVisibleTo("FacilityLayout.Core.Tests")>
 Public Class Form1
-    Friend myNumDepartments As Integer
-    Friend myDeptRowsColumns(1) As Integer
-    Friend myDeptSizes() As Integer
-    Friend myVolumeMatrix(,) As Integer
-    Friend myCostMatrix(,) As Double
     Private RandomRow As New Random
     Friend myFacilityMatrix(,) As Integer 'Matrix displaying the field of tiles and empty spaces
     Private myTermiteOwnedTile(,) As Boolean 'Is a termite in the process of moving this tile?
     Friend myTermites() As Termites 'Agents for moving the tiles
     Private myNumTermites As Integer
-    Friend myFlows() As FlowStats
     Private Tile(,) As Windows.Forms.Label
     Private TileRefreshCounter As Integer = 0
     Private myTileColors(,) As Integer
@@ -118,8 +112,8 @@ Public Class Form1
 
     End Sub
     Private Sub GreedyTermiteMethodToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GreedyTermiteMethodToolStripMenuItem.Click
-        Dim Rows As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(0) ^ 2))
-        Dim Columns As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(1) ^ 2))
+        Dim Rows As Integer = Math.Round(Math.Sqrt(2 * FacilityStats.FacilitySize.Rows ^ 2))
+        Dim Columns As Integer = Math.Round(Math.Sqrt(2 * FacilityStats.FacilitySize.Columns ^ 2))
 
         If TxtRows.Text <> "" Then
             Integer.TryParse(TxtRows.Text, Rows)
@@ -129,18 +123,18 @@ Public Class Form1
             Integer.TryParse(TxtColumns.Text, Columns)
         End If
 
-        ReleaseTheTermites(Math.Round(myDeptRowsColumns(0) * myDeptRowsColumns(1) * 1.5), Rows, Columns)
+        ReleaseTheTermites(Math.Round(FacilityStats.FacilitySize.Rows * FacilityStats.FacilitySize.Columns * 1.5), Rows, Columns)
 
         Dim ContigIndicator As Boolean
         Dim TotalContig
         Dim VDCP As Integer
-        ReDim myFrozenDepts(myNumDepartments)
-        ReDim myCountdFrznDepts(myNumDepartments)
+        ReDim myFrozenDepts(FacilityStats.DepartmentCount)
+        ReDim myCountdFrznDepts(FacilityStats.DepartmentCount)
 
         Do
             ReorganizationMethod1(Rows, Columns)
 
-            For i = 1 To myNumDepartments
+            For i = 1 To FacilityStats.DepartmentCount
                 ContigIndicator = contiguityTester.DepartmentIsContiguous(i, myFacilityMatrix)
 
                 If ContigIndicator = True Then
@@ -151,7 +145,7 @@ Public Class Form1
             TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
         Loop Until TotalContig = True
 
-        VDCP = facilityEvaluator.VolumeDistanceCostProduct(myNumDepartments, myFacilityMatrix, myVolumeMatrix, myCostMatrix, myDeptSizes)
+        VDCP = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats.DepartmentCount, myFacilityMatrix, FacilityStats.VolumeMatrix, FacilityStats.CostMatrix, FacilityStats.DepartmentSizes)
         MessageBox.Show(VDCP.ToString("################.00"))
 
     End Sub
@@ -235,15 +229,15 @@ Public Class Form1
         End If
     End Sub
     Private Function MaxFlowValue()
-        Dim i, j, maxflow(myNumDepartments) As Integer
+        Dim i, j, maxflow(FacilityStats.DepartmentCount) As Integer
 
-        For i = 0 To myNumDepartments
+        For i = 0 To FacilityStats.DepartmentCount
             maxflow(i) = 0
         Next
-        For i = 1 To myNumDepartments
-            For j = 1 To myNumDepartments
-                If myVolumeMatrix(i, j) > maxflow(i) Then
-                    maxflow(i) = myVolumeMatrix(i, j)
+        For i = 1 To FacilityStats.DepartmentCount
+            For j = 1 To FacilityStats.DepartmentCount
+                If FacilityStats.VolumeMatrix(i, j) > maxflow(i) Then
+                    maxflow(i) = FacilityStats.VolumeMatrix(i, j)
                 End If
             Next
         Next
@@ -275,21 +269,10 @@ Public Class Form1
     End Sub
 
     Friend Function Configure_App(pathToConfigFile As String) As String
-
         Dim facilityStatsRepository = New FacilityStatsRepository(pathToConfigFile)
-        Dim myFacilityStats = facilityStatsRepository.Load()
+        FacilityStats = facilityStatsRepository.Load()
 
-        myNumDepartments = myFacilityStats.DepartmentCount
-        myDeptRowsColumns = myFacilityStats.FacilitySize.ToArray()
-        myDeptSizes = myFacilityStats.DepartmentSizes
-        myVolumeMatrix = myFacilityStats.VolumeMatrix
-        myCostMatrix = myFacilityStats.CostMatrix
-        myFlows = myFacilityStats.Flows
-        FacilityStats = myFacilityStats
-
-        Dim PopUp As String = myFacilityStats.ToString()
-
-        Return PopUp
+        Return FacilityStats.ToString()
     End Function
 
     Private Sub RandomizeTiles(facilityStats As FacilityStats)
@@ -299,8 +282,8 @@ Public Class Form1
         Dim objMatrixFile As New System.IO.StreamWriter("C:\Users\Andrew\Documents\IE 590\FacilitySwarm.txt")
         Dim strMatrix As String = Nothing
         Dim i, j As Integer
-        Dim Rows As Integer = Math.Round(Math.Sqrt(2 * (myDeptRowsColumns(0) ^ 2)))
-        Dim Columns As Integer = Math.Round(Math.Sqrt(2 * (myDeptRowsColumns(1) ^ 2)))
+        Dim Rows As Integer = Math.Round(Math.Sqrt(2 * (facilityStats.FacilitySize.Rows ^ 2)))
+        Dim Columns As Integer = Math.Round(Math.Sqrt(2 * (facilityStats.FacilitySize.Columns ^ 2)))
         If TxtRows.Text <> "" Then
             Integer.TryParse(TxtRows.Text, Rows)
         End If
@@ -346,19 +329,19 @@ Public Class Form1
         Dim ColumnCounter As Integer = 30
         If TileRefreshCounter = 0 Then
             ReDim Tile(Rows - 1, Columns - 1)
-            ReDim myTileColors(myNumDepartments, 2)
+            ReDim myTileColors(facilityStats.DepartmentCount, 2)
         End If
         Dim ColorRangeCount As Integer = 100
         For j = 0 To 2
             myTileColors(0, j) = 0
         Next
 
-        For i = 0 To myNumDepartments - 1
+        For i = 0 To facilityStats.DepartmentCount - 1
             For j = 0 To 2
-                myTileColors(i + 1, j) = (myNumDepartments / 2) * RandomRow.Next(10, 255 / (myNumDepartments / 2))
+                myTileColors(i + 1, j) = (facilityStats.DepartmentCount / 2) * RandomRow.Next(10, 255 / (facilityStats.DepartmentCount / 2))
 
             Next
-            ColorRangeCount = ColorRangeCount + 150 / myNumDepartments
+            ColorRangeCount = ColorRangeCount + 150 / facilityStats.DepartmentCount
         Next
 
         For i = 0 To Rows - 1
@@ -435,7 +418,7 @@ Public Class Form1
         Dim n As Integer = 0
         Dim Phase1Decay As Integer = 10
         Do
-            If rows - 1 = myDeptRowsColumns(0) AndAlso columns - 1 = myDeptRowsColumns(1) Then
+            If rows - 1 = FacilityStats.FacilitySize.Rows AndAlso columns - 1 = FacilityStats.FacilitySize.Columns Then
                 Exit Do
             End If
             refreshcounter = refreshcounter + 1
@@ -447,7 +430,7 @@ Public Class Form1
                     Next
                 Next
                 myNumFrozenDepts = 0
-                For a = 0 To myNumDepartments
+                For a = 0 To FacilityStats.DepartmentCount
                     myFrozenDepts(a) = False
                     myCountdFrznDepts(a) = False
                 Next
@@ -469,7 +452,7 @@ Public Class Form1
                 End If
             End If
             If myLoopCounter >= myGravStart + Math.Round(myGravStart / 2) Then
-                For a = 1 To myNumDepartments
+                For a = 1 To FacilityStats.DepartmentCount
                     ContigIndicator = contiguityTester.DepartmentIsContiguous(a, myFacilityMatrix)
                     If ContigIndicator = False Then
                         TotalContig = False
@@ -479,7 +462,7 @@ Public Class Form1
                     End If
                 Next
             End If
-            'If myNumDepartments - myNumFrozenDepts < 1 AndAlso myLoopCounter > myGravStart * 3 Then
+            'If FacilityStats.DepartmentCount - myNumFrozenDepts < 1 AndAlso myLoopCounter > myGravStart * 3 Then
             '    'MessageBox.Show("Departments close to contiguous. Loop exited to avoid infinite loop.")
             '    Exit Do
             'End If
@@ -772,8 +755,8 @@ Public Class Form1
             If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) AndAlso myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) <= rows - 1 Then
                 If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) AndAlso myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) <= columns - 1 Then
                     If FacilityLayoutModel.IsTileAssigned(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0), myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)) = True Then
-                        If rand <= 100 * (myFlows(myTermites(TermiteNumber).TileDept).Flows(myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0),
-                                myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)))) / (myFlows(myTermites(TermiteNumber).TileDept).FlowSum) Then
+                        If rand <= 100 * (FacilityStats.Flows(myTermites(TermiteNumber).TileDept).Flows(myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0),
+                                myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)))) / (FacilityStats.Flows(myTermites(TermiteNumber).TileDept).FlowSum) Then
                             For j = 0 To 8
                                 If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) AndAlso
                                     myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) <= rows - 1 Then
@@ -810,9 +793,9 @@ Public Class Form1
         Next
     End Sub
     Private Sub ScholarTermiteMethodToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ScholarTermiteMethodToolStripMenuItem.Click
-        Dim Rows As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(0) ^ 2))
-        Dim Columns As Integer = Math.Round(Math.Sqrt(2 * myDeptRowsColumns(1) ^ 2))
-        Dim NumTermites As Integer = Math.Round(myDeptRowsColumns(0) * myDeptRowsColumns(1) * 1.5)
+        Dim Rows As Integer = Math.Round(Math.Sqrt(2 * FacilityStats.FacilitySize.Rows ^ 2))
+        Dim Columns As Integer = Math.Round(Math.Sqrt(2 * FacilityStats.FacilitySize.Columns ^ 2))
+        Dim NumTermites As Integer = Math.Round(FacilityStats.FacilitySize.Rows * FacilityStats.FacilitySize.Columns * 1.5)
         If TxtTermites.Text <> "" Then
             Integer.TryParse(TxtTermites.Text, NumTermites)
         End If
@@ -828,8 +811,8 @@ Public Class Form1
         Dim n As Integer = 0
         Dim StartTime, StopTime As DateTime
         Dim RunTime As TimeSpan
-        ReDim myFrozenDepts(myNumDepartments)
-        ReDim myCountdFrznDepts(myNumDepartments)
+        ReDim myFrozenDepts(FacilityStats.DepartmentCount)
+        ReDim myCountdFrznDepts(FacilityStats.DepartmentCount)
         Dim i, j, y As Integer
 
         Dim adjTilesContainSameDepartment As Boolean = False
@@ -861,7 +844,7 @@ Public Class Form1
             End If
             myLoopPhase = 1
             myLoopCounter = 0
-            NumTermites = Math.Round(myDeptRowsColumns(0) * myDeptRowsColumns(1) * 1.5)
+            NumTermites = Math.Round(FacilityStats.FacilitySize.Rows * FacilityStats.FacilitySize.Columns * 1.5)
             If TxtTermites.Text <> "" Then
                 Integer.TryParse(TxtTermites.Text, NumTermites)
             End If
@@ -878,7 +861,7 @@ Public Class Form1
                         Next
                     Next
                     myNumFrozenDepts = 0
-                    For a = 0 To myNumDepartments
+                    For a = 0 To FacilityStats.DepartmentCount
                         myFrozenDepts(a) = False
                         myCountdFrznDepts(a) = False
                     Next
@@ -901,7 +884,7 @@ Public Class Form1
                     End If
                 End If
                 If myLoopCounter >= myGravStart + Math.Round(myGravStart / 2) Then
-                    For i = 1 To myNumDepartments
+                    For i = 1 To FacilityStats.DepartmentCount
                         ContigIndicator = contiguityTester.DepartmentIsContiguous(i, myFacilityMatrix)
                         If ContigIndicator = False Then
                             TotalContig = False
@@ -922,7 +905,7 @@ Public Class Form1
                     myTermiteOwnedTile(i, j) = False
                 Next
             Next
-            For i = 0 To myNumDepartments
+            For i = 0 To FacilityStats.DepartmentCount
                 myFrozenDepts(i) = False
             Next
             'MessageBox.Show("pause")
@@ -936,7 +919,7 @@ Public Class Form1
                     Next
                 Next
                 myNumFrozenDepts = 0
-                For i = 0 To myNumDepartments
+                For i = 0 To FacilityStats.DepartmentCount
                     myFrozenDepts(i) = False
                     myCountdFrznDepts(i) = False
                 Next
@@ -944,11 +927,11 @@ Public Class Form1
                 TileRefresher(Rows, Columns)
                 Rows = Rows - 1
                 Columns = Columns - 1
-                If Rows = myDeptRowsColumns(0) + 1 Then
+                If Rows = FacilityStats.FacilitySize.Rows + 1 Then
                     myLoopPhase = 2
                 End If
                 'MessageBox.Show("pause")
-            Loop Until Rows = myDeptRowsColumns(0) AndAlso Columns = myDeptRowsColumns(1)
+            Loop Until Rows = FacilityStats.FacilitySize.Rows AndAlso Columns = FacilityStats.FacilitySize.Columns
             Rows = rowstore
             Columns = columnstore
             'MessageBox.Show("Pause")
@@ -962,7 +945,7 @@ Public Class Form1
                     myTermiteOwnedTile(i, j) = False
                 Next
             Next
-            For i = 0 To myNumDepartments
+            For i = 0 To FacilityStats.DepartmentCount
                 myFrozenDepts(i) = False
                 myCountdFrznDepts(i) = False
             Next
@@ -973,9 +956,9 @@ Public Class Form1
 
             '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!STAGE 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             Do
-                ReorganizationMethodScholar(myDeptRowsColumns(0), myDeptRowsColumns(1), myNumTermites)
+                ReorganizationMethodScholar(FacilityStats.FacilitySize.Rows, FacilityStats.FacilitySize.Columns, myNumTermites)
                 If Math.IEEERemainder(myLoopCounter, 100) = 0 Then
-                    TileRefresher(myDeptRowsColumns(0), myDeptRowsColumns(1))
+                    TileRefresher(FacilityStats.FacilitySize.Rows, FacilityStats.FacilitySize.Columns)
                 End If
                 myLoopCounter = myLoopCounter + 1
                 TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
@@ -987,10 +970,10 @@ Public Class Form1
                 End If
 
                 If TotalContig = True Then
-                    For i = 0 To myDeptRowsColumns(0) - 1
-                        For j = 0 To myDeptRowsColumns(1) - 1
+                    For i = 0 To FacilityStats.FacilitySize.Rows - 1
+                        For j = 0 To FacilityStats.FacilitySize.Columns - 1
                             If FacilityLayoutModel.IsTileAssigned(i, j) = False Then
-                                adjTilesContainSameDepartment = contiguityTester.AdjacentTilesContainSameDepartment(myTermites(0).TileDept, i, j, myFacilityMatrix, myDeptSizes)
+                                adjTilesContainSameDepartment = contiguityTester.AdjacentTilesContainSameDepartment(myTermites(0).TileDept, i, j, myFacilityMatrix, FacilityStats.DepartmentSizes)
 
                                 If adjTilesContainSameDepartment Then
                                     DropTile(i, j, 0)
@@ -1004,8 +987,8 @@ Public Class Form1
                     Next
                 End If
 
-                For i = 0 To myDeptRowsColumns(0) - 1
-                    For j = 0 To myDeptRowsColumns(1) - 1
+                For i = 0 To FacilityStats.FacilitySize.Rows - 1
+                    For j = 0 To FacilityStats.FacilitySize.Columns - 1
                         If FacilityLayoutModel.IsTileAssigned(i, j) = False Then
                             TotalContig = False
                             Exit For
@@ -1017,7 +1000,7 @@ Public Class Form1
             RunTime = StopTime.Subtract(StartTime)
             Dim VDC As Double
             Dim OBJValue As String
-            VDC = facilityEvaluator.VolumeDistanceCostProduct(myNumDepartments, myFacilityMatrix, myVolumeMatrix, myCostMatrix, myDeptSizes)
+            VDC = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats.DepartmentCount, myFacilityMatrix, FacilityStats.VolumeMatrix, FacilityStats.CostMatrix, FacilityStats.DepartmentSizes)
             OBJValue = VDC.ToString & vbCrLf & RunTime.ToString
             MessageBox.Show(OBJValue)
             Solutions(x) = VDC

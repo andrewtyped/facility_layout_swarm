@@ -16,6 +16,7 @@ namespace FacilityLayout.Core.Tests
     {
         private Form1 _facilityLayoutForm;
         private string pathToDataFile;
+        private FacilityStats facilityStats;
 
         [SetUp]
         public void SetUp()
@@ -25,39 +26,40 @@ namespace FacilityLayout.Core.Tests
             _facilityLayoutForm.Configure_App(pathToDataFile);
             _facilityLayoutForm.FacilityLayoutModel = _facilityLayoutForm.GenerateFacilitySwarm(_facilityLayoutForm.FacilityStats);
             _facilityLayoutForm.myFacilityMatrix = _facilityLayoutForm.FacilityLayoutModel.Facility;
+            facilityStats = _facilityLayoutForm.FacilityStats;
         }
 
         [Test]
         public void Configure_App_Sets_Num_Departments()
         {
-            Assert.AreEqual(15, _facilityLayoutForm.myNumDepartments);
+            Assert.AreEqual(15, facilityStats.DepartmentCount);
         }
 
         [Test]
         public void Configure_App_Sets_Facility_Row_And_Column_Numbers()
         {
-            Assert.AreEqual(15, _facilityLayoutForm.myDeptRowsColumns[0]); //rows
-            Assert.AreEqual(15, _facilityLayoutForm.myDeptRowsColumns[1]); //columns
+            Assert.AreEqual(15, facilityStats.FacilitySize.Rows); //rows
+            Assert.AreEqual(15, facilityStats.FacilitySize.Columns); //columns
         }
 
         [Test]
         public void Configure_App_Sets_Department_Sizes()
         {
-            Assert.AreEqual(15, _facilityLayoutForm.myDeptSizes[1], "Dept 1 - unexpected size");
-            Assert.AreEqual(10, _facilityLayoutForm.myDeptSizes[2], "Dept 2 - unexpected size");
-            Assert.AreEqual(9, _facilityLayoutForm.myDeptSizes[3], "Dept 3 - unexpected size");
-            Assert.AreEqual(7, _facilityLayoutForm.myDeptSizes[4], "Dept 4 - unexpected size");
-            Assert.AreEqual(9, _facilityLayoutForm.myDeptSizes[5], "Dept 5 - unexpected size");
-            Assert.AreEqual(25, _facilityLayoutForm.myDeptSizes[6], "Dept 6 - unexpected size");
-            Assert.AreEqual(25, _facilityLayoutForm.myDeptSizes[7], "Dept 7 - unexpected size");
-            Assert.AreEqual(15, _facilityLayoutForm.myDeptSizes[8], "Dept 8 - unexpected size");
-            Assert.AreEqual(10, _facilityLayoutForm.myDeptSizes[9], "Dept 9 - unexpected size");
-            Assert.AreEqual(25, _facilityLayoutForm.myDeptSizes[10], "Dept 10 - unexpected size");
-            Assert.AreEqual(10, _facilityLayoutForm.myDeptSizes[11], "Dept 11 - unexpected size");
-            Assert.AreEqual(15, _facilityLayoutForm.myDeptSizes[12], "Dept 12 - unexpected size");
-            Assert.AreEqual(6, _facilityLayoutForm.myDeptSizes[13], "Dept 13 - unexpected size");
-            Assert.AreEqual(19, _facilityLayoutForm.myDeptSizes[14], "Dept 14 - unexpected size");
-            Assert.AreEqual(25, _facilityLayoutForm.myDeptSizes[15], "Dept 15 - unexpected size");
+            Assert.AreEqual(15, facilityStats.DepartmentSizes[1], "Dept 1 - unexpected size");
+            Assert.AreEqual(10, facilityStats.DepartmentSizes[2], "Dept 2 - unexpected size");
+            Assert.AreEqual(9, facilityStats.DepartmentSizes[3], "Dept 3 - unexpected size");
+            Assert.AreEqual(7, facilityStats.DepartmentSizes[4], "Dept 4 - unexpected size");
+            Assert.AreEqual(9, facilityStats.DepartmentSizes[5], "Dept 5 - unexpected size");
+            Assert.AreEqual(25, facilityStats.DepartmentSizes[6], "Dept 6 - unexpected size");
+            Assert.AreEqual(25, facilityStats.DepartmentSizes[7], "Dept 7 - unexpected size");
+            Assert.AreEqual(15, facilityStats.DepartmentSizes[8], "Dept 8 - unexpected size");
+            Assert.AreEqual(10, facilityStats.DepartmentSizes[9], "Dept 9 - unexpected size");
+            Assert.AreEqual(25, facilityStats.DepartmentSizes[10], "Dept 10 - unexpected size");
+            Assert.AreEqual(10, facilityStats.DepartmentSizes[11], "Dept 11 - unexpected size");
+            Assert.AreEqual(15, facilityStats.DepartmentSizes[12], "Dept 12 - unexpected size");
+            Assert.AreEqual(6, facilityStats.DepartmentSizes[13], "Dept 13 - unexpected size");
+            Assert.AreEqual(19, facilityStats.DepartmentSizes[14], "Dept 14 - unexpected size");
+            Assert.AreEqual(25, facilityStats.DepartmentSizes[15], "Dept 15 - unexpected size");
         }
 
         [Test]
@@ -87,7 +89,7 @@ namespace FacilityLayout.Core.Tests
             {
                 for(var j = 0; j < expectedMatrix.GetLength(1); j++)
                 {
-                    Assert.AreEqual(expectedMatrix[i, j], _facilityLayoutForm.myVolumeMatrix[i, j], $"mismatch at index [{i},{j}]");
+                    Assert.AreEqual(expectedMatrix[i, j], facilityStats.VolumeMatrix[i, j], $"mismatch at index [{i},{j}]");
                 }
             }
         }
@@ -120,7 +122,7 @@ namespace FacilityLayout.Core.Tests
             {
                 for (var j = 0; j < expectedCostMatrix.GetLength(1); j++)
                 {
-                    Assert.AreEqual(expectedCostMatrix[i, j], _facilityLayoutForm.myCostMatrix[i, j], $"mismatch at index [{i},{j}]");
+                    Assert.AreEqual(expectedCostMatrix[i, j], facilityStats.CostMatrix[i, j], $"mismatch at index [{i},{j}]");
                 }
             }
         }
@@ -149,7 +151,7 @@ namespace FacilityLayout.Core.Tests
             for (var i = 0; i < flowStats.Length; i++)
             {
                 var expFlow = flowStats[i];
-                var actualFlow = _facilityLayoutForm.myFlows[i];
+                var actualFlow = facilityStats.Flows[i];
 
                 CollectionAssert.AreEqual(expFlow.Flows, actualFlow.Flows, $"Flows mismatched at index [{i}]");
                 Assert.AreEqual(expFlow.FlowSum, actualFlow.FlowSum, $"Flowsum mismatched at index[{i}]");
