@@ -64,6 +64,10 @@ namespace FaciltyLayout.Core.Models
         }
 
         private int[,] weightedVolumeMatrix;
+        /// <summary>
+        /// Uses the Volume and Department size matrices to establish
+        /// weighted relationships between departments. 
+        /// </summary>
         public int[,] WeightedVolumeMatrix
         {
             get
@@ -85,6 +89,21 @@ namespace FaciltyLayout.Core.Models
             }
         }
 
+        private FlowStats[] flows;
+
+        public FlowStats[] Flows
+        {
+            get
+            {
+                if(flows == null)
+                {
+                    flows = CalculateDepartmentFlowStats();
+                }
+
+                return flows;
+            }
+        }
+
 
         public FacilityStats(int departmentCount, GridSize facilitySize, IEnumerable<Department> departments, int[,] volumeMatrix, double[,] costMatrix)
         {
@@ -93,6 +112,58 @@ namespace FaciltyLayout.Core.Models
             Departments = departments;
             VolumeMatrix = volumeMatrix;
             CostMatrix = costMatrix;
+        }
+
+        private FlowStats[] CalculateDepartmentFlowStats()
+        {
+            var flowStats = new FlowStats[DepartmentCount + 1];
+
+            for(var i = 1; i <= DepartmentCount; i++)
+            {
+                flowStats[i].Flows = new int[DepartmentCount + 1];
+
+                for(var j = 1; j <= DepartmentCount; j++)
+                {
+                    //The roundabout method of getting to an int here seems to match VB most closely
+                    var flow = (int)(Math.Round(WeightedVolumeMatrix[j, i] / CostMatrix[j, i], 0)
+                        + Math.Round(WeightedVolumeMatrix[i, j] / CostMatrix[i, j],0));
+
+                    if(flow > 0)
+                    {
+                        flowStats[i].Flows[j] = flow;
+                        flowStats[i].NumRelations++;
+                        flowStats[i].FlowSum += flow;
+                    }
+                }
+            }
+
+            return flowStats;
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine($"Basic Facility Stats");
+            sb.AppendLine($"Department Count: {DepartmentCount}");
+            sb.AppendLine($"Rows: {FacilitySize.Rows}");
+            sb.AppendLine($"Columns: {FacilitySize.Columns}");
+            sb.AppendLine("Department Sizes:");
+
+            foreach(var department in Departments)
+            {
+                sb.AppendLine($"{department.Id},{department.Area}");
+            }
+
+            sb.AppendLine("Fixed Departments:");
+
+            foreach(var department in Departments)
+            {
+                if (department.IsLocationFixed)
+                    sb.AppendLine($"{department.Id}");
+            }
+
+            return sb.ToString();
         }
 
 

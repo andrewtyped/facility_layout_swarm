@@ -50,45 +50,6 @@ Public Class Form1
         myTermites(TermiteNumber).TileDept = Nothing
     End Sub
 
-    Private Function FlowFinder()
-        Dim i, j, k As Integer
-        Dim FlowRelation(myNumDepartments) As FlowStats
-        For i = 1 To myNumDepartments
-            ReDim FlowRelation(i).Flows(myNumDepartments)
-            FlowRelation(i).NumRelations = 0
-            FlowRelation(i).FlowSum = 0
-        Next
-
-        For j = 1 To myNumDepartments
-            For i = 1 To myNumDepartments
-                If myTransformedVolumeMatrix(j, i) > 0 Then
-                    FlowRelation(j).Flows(i) = FlowRelation(j).Flows(i) + myTransformedVolumeMatrix(j, i) / myCostMatrix(j, i)
-                End If
-                If myTransformedVolumeMatrix(i, j) > 0 Then
-                    FlowRelation(j).Flows(i) = FlowRelation(j).Flows(i) + myTransformedVolumeMatrix(i, j) / myCostMatrix(i, j)
-                End If
-                If myTransformedVolumeMatrix(j, i) > 0 Or myTransformedVolumeMatrix(i, j) > 0 Then
-                    FlowRelation(j).NumRelations = FlowRelation(j).NumRelations + 1
-                End If
-            Next
-        Next
-        For j = 1 To myNumDepartments
-            ReDim FlowRelation(j).CondensedFlows(FlowRelation(j).NumRelations - 1)
-            For i = 0 To FlowRelation(j).NumRelations - 1
-                For k = 0 To myNumDepartments
-                    If FlowRelation(j).Flows(k) <> 0 Then
-                        FlowRelation(j).CondensedFlows(i) = FlowRelation(j).Flows(k)
-                        i = i + 1
-                    End If
-                Next
-            Next
-            For i = 1 To myNumDepartments
-                FlowRelation(j).FlowSum = FlowRelation(j).FlowSum + FlowRelation(j).Flows(i)
-            Next
-        Next
-
-        Return FlowRelation
-    End Function
     Private Sub FreezeDeptMotion(ByVal dept As Integer, ByVal rows As Integer, ByVal columns As Integer)
         For i = 0 To rows - 1
             For j = 0 To columns - 1
@@ -104,7 +65,7 @@ Public Class Form1
         End If
     End Sub
     'Creates the facility field, places tiles randomly across the field
-    Private Function GenerateFacilitySwarm()
+    Friend Function GenerateFacilitySwarm()
         'Generates rows and columns proportionally larger than the
         'acutal size of the facility to allow empty space for
         'the execution of the algorithm
@@ -416,32 +377,9 @@ Public Class Form1
         myVolumeMatrix = facilityStats.VolumeMatrix
         myCostMatrix = facilityStats.CostMatrix
         myTransformedVolumeMatrix = facilityStats.WeightedVolumeMatrix
+        myFlows = facilityStats.Flows
 
-        Dim PopUp As String = "Basic Facility Stats" & vbCrLf
-        PopUp = PopUp & "No. of Departments: " & facilityStats.DepartmentCount.ToString & vbCrLf &
-            "No. of Rows: " & facilityStats.FacilitySize.Rows & vbCrLf & "No. of Columns: " & facilityStats.FacilitySize.Columns & vbCrLf &
-            "Department Sizes: " & vbCrLf
-
-        For i = 0 To Math.Round(facilityStats.DepartmentCount / 2) - 1
-            PopUp = PopUp & facilityStats.DepartmentSizes(i + 1).ToString & ", "
-        Next
-        PopUp = PopUp & vbCrLf
-        For i = Math.Round(facilityStats.DepartmentCount / 2) To facilityStats.DepartmentCount - 1
-            PopUp = PopUp & facilityStats.DepartmentSizes(i + 1).ToString & ", "
-        Next
-        PopUp = PopUp & vbCrLf & "Fixed Departments: "
-
-        Dim x As Integer = 0
-
-        For i = 0 To facilityStats.DepartmentCount
-            If facilityStats.IsDepartmentLocationFixed(i) = True Then
-                PopUp = PopUp & x.ToString & ", "
-            End If
-            x = x + 1
-        Next
-
-        ReDim myFlows(myNumDepartments)
-        myFlows = FlowFinder()
+        Dim PopUp As String = facilityStats.ToString()
 
         Return PopUp
     End Function

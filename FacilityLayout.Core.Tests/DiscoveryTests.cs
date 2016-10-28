@@ -200,14 +200,12 @@ namespace FacilityLayout.Core.Tests
                     new FlowStats()
                     {
                         Flows = new int[16] { 0,0,4608,0,0,0,0,0,0,0,0,0,0,0,0,5760 }, //formula = volume / cost
-                        CondensedFlows = new int[] {4608,5760 },
                         FlowSum = 4608 + 5760,
                         NumRelations = 2
                     },
                     new FlowStats()
                     {
                         Flows = new int[16] { 0, 4608, 0,0,0,0,0,0,0,0,0,0,0,0,0,12 }, //formula = volume / cost
-                        CondensedFlows = new int[] {4608,12 },
                         FlowSum = 4608 + 12,
                         NumRelations = 2
                     }
@@ -219,7 +217,6 @@ namespace FacilityLayout.Core.Tests
                 var actualFlow = _facilityLayoutForm.myFlows[i];
 
                 CollectionAssert.AreEqual(expFlow.Flows, actualFlow.Flows, $"Flows mismatched at index [{i}]");
-                CollectionAssert.AreEqual(expFlow.CondensedFlows, actualFlow.CondensedFlows, $"Condensed flows mismatched at index[{i}]");
                 Assert.AreEqual(expFlow.FlowSum, actualFlow.FlowSum, $"Flowsum mismatched at index[{i}]");
                 Assert.AreEqual(expFlow.NumRelations, actualFlow.NumRelations, $"NumRelations mismatched at index [{i}]");
             }

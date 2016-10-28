@@ -196,9 +196,9 @@ namespace FacilityLayout.Core.Tests
                 }
             }
         }
-        /*
+        
         [Test]
-        public void Configure_App_Sets_Flows()
+        public void Load_Sets_Flows()
         {
             //"FlowStats" are a struct which describe a department's relationship with all other departments.
             var flowStats = new FlowStats[]
@@ -207,14 +207,12 @@ namespace FacilityLayout.Core.Tests
                     new FlowStats()
                     {
                         Flows = new int[16] { 0,0,4608,0,0,0,0,0,0,0,0,0,0,0,0,5760 }, //formula = volume / cost
-                        CondensedFlows = new int[] {4608,5760 },
                         FlowSum = 4608 + 5760,
                         NumRelations = 2
                     },
                     new FlowStats()
                     {
                         Flows = new int[16] { 0, 4608, 0,0,0,0,0,0,0,0,0,0,0,0,0,12 }, //formula = volume / cost
-                        CondensedFlows = new int[] {4608,12 },
                         FlowSum = 4608 + 12,
                         NumRelations = 2
                     }
@@ -223,14 +221,13 @@ namespace FacilityLayout.Core.Tests
             for (var i = 0; i < flowStats.Length; i++)
             {
                 var expFlow = flowStats[i];
-                var actualFlow = facilityStats.myFlows[i];
+                var actualFlow = facilityStats.Flows[i];
 
                 CollectionAssert.AreEqual(expFlow.Flows, actualFlow.Flows, $"Flows mismatched at index [{i}]");
-                CollectionAssert.AreEqual(expFlow.CondensedFlows, actualFlow.CondensedFlows, $"Condensed flows mismatched at index[{i}]");
                 Assert.AreEqual(expFlow.FlowSum, actualFlow.FlowSum, $"Flowsum mismatched at index[{i}]");
                 Assert.AreEqual(expFlow.NumRelations, actualFlow.NumRelations, $"NumRelations mismatched at index [{i}]");
             }
         }
-        */
+        
     }
 }
