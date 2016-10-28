@@ -11,14 +11,14 @@ namespace FaciltyLayout.Core.Models
     {
         private readonly Random random = new Random();
         private readonly FacilityStats facilityStats;
-        private readonly GridSize layoutArea;
+        public GridSize LayoutArea { get; }
 
         public int[,] Facility { get; private set; }
 
         public FacilityLayoutModel(FacilityStats facilityStats)
         {
             this.facilityStats = facilityStats;
-            layoutArea = SetLayoutArea();
+            LayoutArea = SetLayoutArea();
         }
 
         private GridSize SetLayoutArea()
@@ -33,7 +33,7 @@ namespace FaciltyLayout.Core.Models
 
         public void InitializeDepartmentTiles()
         {
-            Facility = new int[layoutArea.Rows, layoutArea.Columns];
+            Facility = new int[LayoutArea.Rows, LayoutArea.Columns];
             PlaceTilesForFixedDepartments();
             PlaceTilesForLooseDepartments();
         }
@@ -68,7 +68,7 @@ namespace FaciltyLayout.Core.Models
 
                 do
                 {
-                    desiredPostion = new Position(random.Next(0, layoutArea.Rows), random.Next(layoutArea.Columns));
+                    desiredPostion = new Position(random.Next(0, LayoutArea.Rows), random.Next(LayoutArea.Columns));
                 } while (IsTileAssigned(desiredPostion));
 
                 Facility[desiredPostion.Row, desiredPostion.Column] = department.Id;

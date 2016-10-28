@@ -19,10 +19,8 @@ Public Class Form1
     Private myNumFrozenDepts As Integer = 0
     Private myGravStart As Integer
     Private TransformVDC As Integer
-
     Private facilityEvaluator As New FacilityEvaluator()
     Private contiguityTester As New ContiguityTester()
-
     Friend FacilityStats As FacilityStats
     Friend FacilityLayoutModel As FacilityLayoutModel
 
@@ -112,8 +110,8 @@ Public Class Form1
 
     End Sub
     Private Sub GreedyTermiteMethodToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GreedyTermiteMethodToolStripMenuItem.Click
-        Dim Rows As Integer = Math.Round(Math.Sqrt(2 * FacilityStats.FacilitySize.Rows ^ 2))
-        Dim Columns As Integer = Math.Round(Math.Sqrt(2 * FacilityStats.FacilitySize.Columns ^ 2))
+        Dim Rows As Integer = FacilityLayoutModel.LayoutArea.Rows
+        Dim Columns As Integer = FacilityLayoutModel.LayoutArea.Columns
 
         If TxtRows.Text <> "" Then
             Integer.TryParse(TxtRows.Text, Rows)
@@ -156,7 +154,6 @@ Public Class Form1
         Dim i, j, a As Integer
         Dim Checked(2, 2) As Boolean
         Dim SearchOrder(8, 1) As Integer
-        'Dim rand As Integer
 
         If myLoopPhase = 1 Then
             For i = 0 To 2
@@ -363,7 +360,6 @@ Public Class Form1
                 myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                'Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
                 FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                 i = i + 1
             End If
@@ -378,7 +374,6 @@ Public Class Form1
                 myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
                 Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                'Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
                 FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                 i = i + 1
             End If
@@ -408,7 +403,6 @@ Public Class Form1
             End If
             refreshcounter = refreshcounter + 1
             If Math.IEEERemainder(refreshcounter, 400) = 0 Then
-                'MessageBox.Show("pause")
                 For a = 0 To rows - 1
                     For b = 0 To columns - 1
                         myTermiteOwnedTile(a, b) = False
@@ -447,10 +441,6 @@ Public Class Form1
                     End If
                 Next
             End If
-            'If FacilityStats.DepartmentCount - myNumFrozenDepts < 1 AndAlso myLoopCounter > myGravStart * 3 Then
-            '    'MessageBox.Show("Departments close to contiguous. Loop exited to avoid infinite loop.")
-            '    Exit Do
-            'End If
             If Math.IEEERemainder(refreshcounter, 100) = 0 Then
                 TileRefresher(rows, columns)
             End If
@@ -591,7 +581,6 @@ Public Class Form1
 
             'In my new position, check to see if there are any tiles around that are closely related
             'If so, drop my tile in the closest empty space
-
         Next i
     End Sub
 
@@ -611,7 +600,6 @@ Public Class Form1
         End If
 
         For i = HoardingTermite To numtermites - 1
-            'For j = 0 To 9
             NoLazinessAllowed(i)
             MarchMarchMarch(i, rows, columns, upperlimit)
             myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
@@ -645,8 +633,6 @@ Public Class Form1
                     End If
                 End If
             End If
-            'Next
-            'For i = HoardingTermite To myNumTermites - 1
             If myTermites(i).TermiteType = 1 Then
                 Do
                     If myTermites(i).HasTile = True Then
@@ -732,7 +718,6 @@ Public Class Form1
         Dim ClosestEmpty(,) As Integer = LookAround()
         Dim AdjCheck(,) As Integer = LookAround()
         Dim rand As Integer = RandomRow.Next(0, 100)
-        Dim TilePlaceHolder As Integer
         'Check adjacent spaces for equivalent tiles
 
         For i = 0 To 8
