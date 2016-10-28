@@ -1,4 +1,5 @@
 ﻿using FaciltyLayout.Core;
+using FaciltyLayout.Core.Models;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ namespace FacilityLayout.Core.Tests
     {
         private FacilityEvaluator _facilityEvaluator;
         private int[,] _facilityMatrix;
+        private int[,] _volumeMatrix;
+        private double[,] _costMatrix;
         private int[] _deptSizes;
         private int _numDepartments;
 
@@ -28,6 +31,22 @@ namespace FacilityLayout.Core.Tests
                 {0, 0, 0, 0 }
             };
 
+            _volumeMatrix = new int[4, 4]
+            {
+                {0, 0, 0, 0 },
+                {0, 0, 0, 10 },
+                {0, 5, 0, 20 },
+                {0, 10, 0, 0 },
+            };
+
+            _costMatrix = new double[4, 4]
+            {
+                {0, 0, 0, 0 },
+                {0, 1, 1, 0.5 },
+                {0, 1, 1, 0.5 },
+                {0, 0.5, 0.5, 0.5 },
+            };
+
             _numDepartments = 3;
             _deptSizes = new int[4] { 0, 3, 3, 3 };
             _facilityEvaluator = new FacilityEvaluator();
@@ -36,7 +55,20 @@ namespace FacilityLayout.Core.Tests
         [Test]
         public void CentroidCalculator_Calculates_Centers_Of_Departments()
         {
-            double[,] centroids = _facilityEvaluator.CentroidCalculator(_numDepartments, _facilityMatrix, _deptSizes);
+            var facilityStats = new FacilityStats(
+                3,
+                new GridSize(3, 3),
+                new List<Department>()
+                {
+                    new Department(0,0,false),
+                    new Department(1,3,false),
+                    new Department(2,3,false),
+                    new Department(3,3,false),
+                },
+                _volumeMatrix,
+                _costMatrix);
+
+            double[,] centroids = _facilityEvaluator.CentroidCalculator(facilityStats, _facilityMatrix);
 
             Assert.AreEqual(0, centroids[1, 0]);
             Assert.AreEqual(2, centroids[1, 1]);
@@ -49,23 +81,20 @@ namespace FacilityLayout.Core.Tests
         [Test]
         public void VDCProduct_Calculates_Volume_Distance_Cost_Product_Of_Facility()
         {
-            int[,] volumeMatrix = new int[4, 4]
-            {
-                {0, 0, 0, 0 },
-                {0, 0, 0, 10 },
-                {0, 5, 0, 20 },
-                {0, 10, 0, 0 },
-            };
+            var facilityStats = new FacilityStats(
+                3,
+                new GridSize(3, 3),
+                new List<Department>()
+                {
+                    new Department(0,0,false),
+                    new Department(1,3,false),
+                    new Department(2,3,false),
+                    new Department(3,3,false),
+                },
+                _volumeMatrix,
+                _costMatrix);
 
-            double[,] costMatrix = new double[4, 4]
-            {
-                {0, 0, 0, 0 },
-                {0, 1, 1, 0.5 },
-                {0, 1, 1, 0.5 },
-                {0, 0.5, 0.5, 0.5 },
-            };
-
-            double product = _facilityEvaluator.VolumeDistanceCostProduct(_numDepartments, _facilityMatrix, volumeMatrix, costMatrix, _deptSizes);
+            double product = _facilityEvaluator.VolumeDistanceCostProduct(facilityStats, _facilityMatrix);
 
             //VDC formula
             //sum(

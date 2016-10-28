@@ -145,7 +145,7 @@ Public Class Form1
             TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
         Loop Until TotalContig = True
 
-        VDCP = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats.DepartmentCount, myFacilityMatrix, FacilityStats.VolumeMatrix, FacilityStats.CostMatrix, FacilityStats.DepartmentSizes)
+        VDCP = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats, myFacilityMatrix)
         MessageBox.Show(VDCP.ToString("################.00"))
 
     End Sub
@@ -228,22 +228,7 @@ Public Class Form1
                                  myTermites(i).ColumnPos + myTermites(i).HorizDirection) = False
         End If
     End Sub
-    Private Function MaxFlowValue()
-        Dim i, j, maxflow(FacilityStats.DepartmentCount) As Integer
 
-        For i = 0 To FacilityStats.DepartmentCount
-            maxflow(i) = 0
-        Next
-        For i = 1 To FacilityStats.DepartmentCount
-            For j = 1 To FacilityStats.DepartmentCount
-                If FacilityStats.VolumeMatrix(i, j) > maxflow(i) Then
-                    maxflow(i) = FacilityStats.VolumeMatrix(i, j)
-                End If
-            Next
-        Next
-
-        Return maxflow
-    End Function
     'Termites may not have a horiz,vert direction of 0,0
     Private Sub NoLazinessAllowed(ByVal i As Integer)
         If myTermites(i).HorizDirection = 0 AndAlso myTermites(i).VertDirection = 0 Then
@@ -1000,7 +985,7 @@ Public Class Form1
             RunTime = StopTime.Subtract(StartTime)
             Dim VDC As Double
             Dim OBJValue As String
-            VDC = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats.DepartmentCount, myFacilityMatrix, FacilityStats.VolumeMatrix, FacilityStats.CostMatrix, FacilityStats.DepartmentSizes)
+            VDC = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats, myFacilityMatrix)
             OBJValue = VDC.ToString & vbCrLf & RunTime.ToString
             MessageBox.Show(OBJValue)
             Solutions(x) = VDC

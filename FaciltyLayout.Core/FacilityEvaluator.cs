@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FaciltyLayout.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,11 +16,11 @@ namespace FaciltyLayout.Core
         ///     2-d array showing the center-x coord for each dept in the [,0] position, and the center-y
         ///     coord for each dept in the [,1] position. The [n,]th row denotes the nth department.
         /// </returns>
-        internal double[,] CentroidCalculator(int numDepartments, int[,] facilityMatrix, int[] deptSizes)
+        internal double[,] CentroidCalculator(FacilityStats facilityStats, int[,] facilityMatrix)
         {
-            double[,] centroids = new double[numDepartments + 1, 2];
+            double[,] centroids = new double[facilityStats.DepartmentCount + 1, 2];
 
-            for (var k = 1; k <= numDepartments; k++)
+            for (var k = 1; k <= facilityStats.DepartmentCount; k++)
             {
                 var rowSums = 0;
                 var columnSums = 0;
@@ -37,25 +38,25 @@ namespace FaciltyLayout.Core
                 }
 
                 //TODO: This is always truncating the expression to an int. Is that right?
-                centroids[k, 0] = rowSums / deptSizes[k];
-                centroids[k, 1] = columnSums / deptSizes[k];
+                centroids[k, 0] = rowSums / facilityStats.DepartmentSizes[k];
+                centroids[k, 1] = columnSums / facilityStats.DepartmentSizes[k];
             }
 
             return centroids;
         }
 
-        public double VolumeDistanceCostProduct(int numDepartments, int[,] facilityMatrix, int[,] volumeMatrix, double[,] costMatrix, int[] deptSizes)
+        public double VolumeDistanceCostProduct(FacilityStats facilityStats, int[,] facilityMatrix)
         {
             double product = 0.0;
-            var centroids = CentroidCalculator(numDepartments, facilityMatrix, deptSizes);
+            var centroids = CentroidCalculator(facilityStats, facilityMatrix);
 
-            for(var i = 1; i <= numDepartments; i++)
+            for(var i = 1; i <= facilityStats.DepartmentCount; i++)
             {
-                for(var j = 1; j <= numDepartments; j++)
+                for(var j = 1; j <= facilityStats.DepartmentCount; j++)
                 {
                     product += (Math.Abs(centroids[j, 0] - centroids[i, 0]) + Math.Abs(centroids[j, 1] - centroids[i, 1]))
-                        * volumeMatrix[i, j]
-                        * costMatrix[i, j];
+                        * facilityStats.VolumeMatrix[i, j]
+                        * facilityStats.CostMatrix[i, j];
                 }
             }
 
