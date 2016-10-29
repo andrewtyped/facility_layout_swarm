@@ -14,7 +14,6 @@ Public Class Form1
     Private TileRefreshCounter As Integer = 0
     Private myTileColors(,) As Integer
     Private myLoopCounter = 0
-    Private myFrozenDepts() As Boolean
     Private myCountdFrznDepts() As Boolean
     Private myLoopPhase As Integer
     Private myNumFrozenDepts As Integer = 0
@@ -49,7 +48,6 @@ Public Class Form1
         If myCountdFrznDepts(dept) = False Then
             myNumFrozenDepts = myNumFrozenDepts + 1
             myCountdFrznDepts(dept) = True
-            myFrozenDepts(dept) = True
         End If
     End Sub
     'Creates the facility field, places tiles randomly across the field
@@ -128,7 +126,6 @@ Public Class Form1
         Dim ContigIndicator As Boolean
         Dim TotalContig
         Dim VDCP As Integer
-        ReDim myFrozenDepts(FacilityStats.DepartmentCount)
         ReDim myCountdFrznDepts(FacilityStats.DepartmentCount)
 
         Do
@@ -353,7 +350,6 @@ Public Class Form1
                 Next
                 myNumFrozenDepts = 0
                 For a = 0 To FacilityStats.DepartmentCount
-                    myFrozenDepts(a) = False
                     myCountdFrznDepts(a) = False
                 Next
                 y = 0
@@ -642,7 +638,6 @@ Public Class Form1
         Dim n As Integer = 0
         Dim StartTime, StopTime As DateTime
         Dim RunTime As TimeSpan
-        ReDim myFrozenDepts(FacilityStats.DepartmentCount)
         ReDim myCountdFrznDepts(FacilityStats.DepartmentCount)
         Dim i, j, y As Integer
 
@@ -693,7 +688,6 @@ Public Class Form1
                     Next
                     myNumFrozenDepts = 0
                     For a = 0 To FacilityStats.DepartmentCount
-                        myFrozenDepts(a) = False
                         myCountdFrznDepts(a) = False
                     Next
                     y = 0
@@ -736,9 +730,6 @@ Public Class Form1
                     myTermiteOwnedTile(i, j) = False
                 Next
             Next
-            For i = 0 To FacilityStats.DepartmentCount
-                myFrozenDepts(i) = False
-            Next
             'MessageBox.Show("pause")
             Dim rowstore, columnstore As Integer
             rowstore = Rows
@@ -751,7 +742,6 @@ Public Class Form1
                 Next
                 myNumFrozenDepts = 0
                 For i = 0 To FacilityStats.DepartmentCount
-                    myFrozenDepts(i) = False
                     myCountdFrznDepts(i) = False
                 Next
                 RealisticCollection(Rows, Columns)
@@ -777,7 +767,6 @@ Public Class Form1
                 Next
             Next
             For i = 0 To FacilityStats.DepartmentCount
-                myFrozenDepts(i) = False
                 myCountdFrznDepts(i) = False
             Next
 
