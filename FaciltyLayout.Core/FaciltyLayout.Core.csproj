@@ -53,9 +53,11 @@
     <Compile Include="Models\FlowStats.cs" />
     <Compile Include="Models\Position.cs" />
     <Compile Include="Models\GridSize.cs" />
+    <Compile Include="Models\TermiteActionEventArgs.cs" />
     <Compile Include="Models\Termites.cs" />
     <Compile Include="PortedFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TermiteManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

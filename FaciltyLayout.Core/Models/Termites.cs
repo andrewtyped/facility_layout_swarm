@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FaciltyLayout.Core.Models
 {
-    public struct Termites
+    public class Termites
     {
         /// <summary>
         /// How far up/down should I go each turn

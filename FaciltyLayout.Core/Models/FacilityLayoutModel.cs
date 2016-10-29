@@ -95,6 +95,16 @@ namespace FaciltyLayout.Core.Models
             Facility[position.Row, position.Column] = department;
         }
 
+        public void SetTileEmpty(int row, int column)
+        {
+            Facility[row, column] = 0;
+        }
+
+        public void SetTileEmpty(Position position)
+        {
+            Facility[position.Row, position.Column] = 0;
+        }
+
         public bool IsTileFixed(int row, int column)
         {
             var departmentId = Facility[row, column];

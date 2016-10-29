@@ -1,4 +1,5 @@
-﻿Imports System.Runtime.CompilerServices
+﻿Imports System.Collections.Generic
+Imports System.Runtime.CompilerServices
 Imports FaciltyLayout.Core
 Imports FaciltyLayout.Core.Models
 
@@ -6,10 +7,10 @@ Imports FaciltyLayout.Core.Models
 Public Class Form1
     Private RandomRow As New Random
     Friend myFacilityMatrix(,) As Integer 'Matrix displaying the field of tiles and empty spaces
-    Private myTermiteOwnedTile(,) As Boolean 'Is a termite in the process of moving this tile?
-    Friend myTermites() As Termites 'Agents for moving the tiles
+    Friend myTermiteOwnedTile(,) As Boolean 'Is a termite in the process of moving this tile?
+    Friend myTermites As List(Of Termites) 'Agents for moving the tiles
     Private myNumTermites As Integer
-    Private Tile(,) As Windows.Forms.Label
+    Friend Tile(,) As Windows.Forms.Label
     Private TileRefreshCounter As Integer = 0
     Private myTileColors(,) As Integer
     Private myLoopCounter = 0
@@ -23,6 +24,7 @@ Public Class Form1
     Private contiguityTester As New ContiguityTester()
     Friend FacilityStats As FacilityStats
     Friend FacilityLayoutModel As FacilityLayoutModel
+    Friend WithEvents TermiteManager As TermiteManager
 
     'Termite sets his tile down
     Private Sub DropTile(ByVal X As Integer, ByVal Y As Integer, ByVal TermiteNumber As Integer)
@@ -146,6 +148,12 @@ Public Class Form1
         VDCP = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats, myFacilityMatrix)
         MessageBox.Show(VDCP.ToString("################.00"))
 
+    End Sub
+
+    Private Sub Form1_TermiteRemovedTile(sender As Object, e As TermiteActionEventArgs) Handles TermiteManager.TermiteRemovedTile
+        Tile(e.Position.Row, e.Position.Column).BackColor = Color.Black
+        Tile(e.Position.Row, e.Position.Column).Text = ""
+        Tile(e.Position.Row, e.Position.Column).Refresh()
     End Sub
     'This funcion defines in what order the termites should look around them for tiles.
     'Depending on the phase of the program, the termites may have a biased direction
@@ -426,51 +434,16 @@ Public Class Form1
         Loop Until TotalContig = True
     End Sub
     'Sets Initial Position an Direction of Termites
-    Private Sub ReleaseTheTermites(ByVal NumTermites As Integer, ByVal rows As Integer, ByVal columns As Integer)
+    Friend Sub ReleaseTheTermites(ByVal NumTermites As Integer, ByVal rows As Integer, ByVal columns As Integer)
+        TermiteManager = New TermiteManager(FacilityLayoutModel)
         myNumTermites = NumTermites
-        ReDim myTermites(NumTermites - 1)
-        Dim HorizDirectionCounter As Integer = 0
-        Dim VertDirectionCounter As Integer = 0
-        ReDim myTermiteOwnedTile(rows - 1, columns - 1)
         Dim TypeRatio As Integer = 3
         If TxtRatio.Text <> "" Then
             Integer.TryParse(TxtRatio.ToString, TypeRatio)
         End If
 
-        For i = 0 To NumTermites - 1
-            myTermites(i).HasTile = False
-            myTermites(i).ColumnPos = RandomRow.Next(0, columns)
-            myTermites(i).RowPos = RandomRow.Next(0, rows)
-            myTermites(i).TermiteType = RandomRow.Next(0, TypeRatio)
-            If myTermites(i).TermiteType < TypeRatio - 1 Then
-                myTermites(i).TermiteType = 0
-            Else
-                myTermites(i).TermiteType = 1
-            End If
-
-            If FacilityLayoutModel.IsTileFixed(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
-                Do
-                    myTermites(i).ColumnPos = RandomRow.Next(0, columns)
-                    myTermites(i).RowPos = RandomRow.Next(0, rows)
-                Loop Until FacilityLayoutModel.IsTileFixed(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
-            End If
-            myTermites(i).HorizDirection = RandomRow.Next(0, 5) - 2
-            myTermites(i).VertDirection = RandomRow.Next(0, 5) - 2
-            NoLazinessAllowed(i)
-            If myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) <> 0 Then
-                If myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = False Then
-                    myTermites(i).HasTile = True
-                    myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = True
-                    myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
-                End If
-            End If
-            If myTermites(i).HasTile = True Then
-                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
-                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-                FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
-            End If
-        Next
+        myTermites = TermiteManager.ReleaseTheTermites(NumTermites, TypeRatio)
+        myTermiteOwnedTile = TermiteManager.OwnedTiles
     End Sub
     'Termites begin to move, collect, and drop tiles
     Private Sub ReorganizationMethod1(ByVal Rows As Integer, ByVal Columns As Integer)

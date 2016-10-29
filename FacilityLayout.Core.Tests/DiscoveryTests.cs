@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WindowsApplication1;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace FacilityLayout.Core.Tests
 {
@@ -17,6 +18,7 @@ namespace FacilityLayout.Core.Tests
         private Form1 _facilityLayoutForm;
         private string pathToDataFile;
         private FacilityStats facilityStats;
+        private FacilityLayoutModel facilityLayout;
 
         [SetUp]
         public void SetUp()
@@ -27,6 +29,17 @@ namespace FacilityLayout.Core.Tests
             _facilityLayoutForm.FacilityLayoutModel = _facilityLayoutForm.GenerateFacilitySwarm(_facilityLayoutForm.FacilityStats);
             _facilityLayoutForm.myFacilityMatrix = _facilityLayoutForm.FacilityLayoutModel.Facility;
             facilityStats = _facilityLayoutForm.FacilityStats;
+            facilityLayout = _facilityLayoutForm.FacilityLayoutModel;
+
+            _facilityLayoutForm.Tile = new Label[facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns];
+
+            for (int i = 0; i < facilityLayout.LayoutArea.Rows; i++)
+            {
+                for (int j = 0; j < facilityLayout.LayoutArea.Columns; j++)
+                {
+                    _facilityLayoutForm.Tile[i, j] = new Label();
+                }
+            }
         }
 
         [Test]
@@ -242,9 +255,100 @@ namespace FacilityLayout.Core.Tests
             }
         }
 
+        [Test]
+        public void Release_The_Termites_Places_Termites()
+        {
+            _facilityLayoutForm.ReleaseTheTermites(100, facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns);
+
+            var numTermitesAtPositions = new Dictionary<Position, int>();
+
+            foreach(var termite in _facilityLayoutForm.myTermites)
+            {
+                int currentCount;
+                numTermitesAtPositions.TryGetValue(termite.Position, out currentCount);
+                numTermitesAtPositions[termite.Position] = currentCount + 1;
+            }
+
+            var avgNumTermitesPerPosition = numTermitesAtPositions.Values.Average();
+
+            Assert.That(avgNumTermitesPerPosition < 1.25); //A magic number, but since we're only using 100 termites
+                                                           //and the grid is 15 x 15, doubling on a tile should be rare.
+        }
+
+        [Test]
+        public void Release_The_Termites_Sets_Termite_Direction()
+        {
+            _facilityLayoutForm.ReleaseTheTermites(100, facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns);
+
+            foreach(var termite in _facilityLayoutForm.myTermites)
+            {
+                Assert.That(termite.RowPos != 0 || termite.ColumnPos != 0);
+            }
+        }
+
+        [Test]
+        public void Release_The_Termites_Does_Not_Allow_Termite_Placement_On_Fixed_Departments()
+        {
+            _facilityLayoutForm.ReleaseTheTermites(100, facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns);
+
+            var fixedDepartmentIds = facilityStats.Departments.Where(d => d.IsLocationFixed).Select(d => d.Id);
+
+            foreach (var termite in _facilityLayoutForm.myTermites)
+            {
+                Assert.IsFalse(fixedDepartmentIds.Contains(facilityLayout.GetTile(termite.Position)));
+            }
+        }
+
+        [Test]
+        public void Release_The_Termites_Allows_Termites_To_Pick_Up_The_Tile_They_Are_Placed_On()
+        {
+            var initialFacility = new int[facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns];
+
+            for (int i = 0; i < facilityLayout.LayoutArea.Rows; i++)
+            {
+                for (int j = 0; j < facilityLayout.LayoutArea.Columns; j++)
+                {
+                    initialFacility[i, j] = facilityLayout.GetTile(i, j);
+                }
+            }
+
+            _facilityLayoutForm.ReleaseTheTermites(100, facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns);
+
+            var tilesAlreadyTaken = new Dictionary<Position, bool>();
+
+            foreach(var termite in _facilityLayoutForm.myTermites)
+            {
+                bool tileAlreadyTaken;
+                tilesAlreadyTaken.TryGetValue(termite.Position, out tileAlreadyTaken);
+
+                if (!tileAlreadyTaken)
+                {
+                    var expectedDepartment = initialFacility[termite.RowPos, termite.ColumnPos];
+
+                    Assert.AreEqual(expectedDepartment, termite.TileDept, $"unexpected termite tile at position [{termite.RowPos},{termite.ColumnPos}]");
+                    Assert.AreEqual(expectedDepartment != 0, termite.HasTile, $"unexpected termite HasTile at position [{termite.RowPos},{termite.ColumnPos}]");
+
+                    tilesAlreadyTaken[termite.Position] = true;
+                }
+                else
+                {
+                    Assert.AreEqual(0, termite.TileDept);
+                    Assert.IsFalse(termite.HasTile);
+                }
+            }
+        }
+
         [TearDown]
         public void TearDown()
         {
+            for (int i = 0; i < facilityLayout.LayoutArea.Rows; i++)
+            {
+                for (int j = 0; j < facilityLayout.LayoutArea.Columns; j++)
+                {
+                    _facilityLayoutForm.Tile[i, j]?.Dispose();
+                }
+            }
+
             _facilityLayoutForm?.Dispose();
         }
 
