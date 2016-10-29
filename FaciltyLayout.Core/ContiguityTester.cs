@@ -19,6 +19,10 @@ namespace FaciltyLayout.Core
             new Position(0,-1),
             new Position(0,1),
             new Position(1,0),
+            new Position(-1,-1),
+            new Position(-1,1),
+            new Position(1,-1),
+            new Position(1,1)
         };
 
         public bool AdjacentTilesContainSameDepartment(int dept, int row, int column, int[,] facility, int[] deptSizes)

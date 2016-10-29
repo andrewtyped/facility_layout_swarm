@@ -82,18 +82,18 @@ namespace FacilityLayout.Core.Tests
         }
 
         [Test]
-        public void Corner_Does_Not_Count_As_Adjacent_Tile()
+        public void Corner_Counts_As_Adjacent_Tile()
         {
             int[] myDeptSizes = new int[] { 0, 5, 4 };
 
             var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(2, 2, 2, _contiguousFacility, myDeptSizes);
-            Assert.IsFalse(adjTilesContainSameDept);
+            Assert.IsTrue(adjTilesContainSameDept);
         }
 
 
         [TestCase(3,2,1)]
-        [TestCase(2,3,1)]
-        [TestCase(2,1,2)]
+        [TestCase(2,3,2)]
+        [TestCase(2,1,3)]
         public void Counts_Number_Of_Similar_Tiles_Adjacent_To_A_Tile(int testRow, int testColumn, int expectedNumSimilarTiles)
         {
             Termites[] termites = new Termites[1]
