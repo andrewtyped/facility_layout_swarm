@@ -202,26 +202,6 @@ Public Class Form1
         Return SearchOrder
 
     End Function
-    'Redirects termite if fixed dept or wall is encountered
-    Private Sub MarchMarchMarch(ByVal i As Integer, ByVal rows As Integer, ByVal columns As Integer, ByVal upperlimit As Integer)
-        'Say what the termites should do in the event they encounter a wall
-        If FacilityLayoutModel.IsPositionValid(myTermites(i).NextPosition, rows, columns) = False Then
-            Do
-                myTermites(i).HorizDirection = RandomRow.Next(0, upperlimit) - 2
-                myTermites(i).VertDirection = RandomRow.Next(0, upperlimit) - 2
-            Loop Until FacilityLayoutModel.IsPositionValid(myTermites(i).NextPosition, rows, columns) = True
-        End If
-    End Sub
-
-    'Termites may not have a horiz,vert direction of 0,0
-    Private Sub NoLazinessAllowed(ByVal i As Integer)
-        If myTermites(i).HorizDirection = 0 AndAlso myTermites(i).VertDirection = 0 Then
-            Do
-                myTermites(i).HorizDirection = RandomRow.Next(0, 5) - 2
-                myTermites(i).VertDirection = RandomRow.Next(0, 5) - 2
-            Loop Until myTermites(i).HorizDirection <> 0 Or myTermites(i).VertDirection <> 0
-        End If
-    End Sub
     Friend Sub OpenToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OpenToolStripMenuItem.Click
         ofdLoadSetup.InitialDirectory = "C:/"
         ofdLoadSetup.Title = "Load Facility Data"
@@ -346,10 +326,7 @@ Public Class Form1
         Next
 
         For x = 0 To myNumTermites - 1
-            NoLazinessAllowed(x)
-            MarchMarchMarch(x, rows - 1, columns - 1, upperlimit)
-            myTermites(x).ColumnPos = myTermites(x).ColumnPos + myTermites(x).HorizDirection
-            myTermites(x).RowPos = myTermites(x).RowPos + myTermites(x).VertDirection
+            myTermites(x).Move(FacilityLayoutModel, rows, columns)
             myTermites(x).TermiteType = RandomRow.Next(0, 3)
             If myTermites(x).TermiteType < 2 Then
                 myTermites(x).TermiteType = 0
@@ -434,10 +411,7 @@ Public Class Form1
         Dim ChaosEnd As Integer = 6500
 
         For i = 0 To myNumTermites - 1
-            NoLazinessAllowed(i)
-            MarchMarchMarch(i, Rows, Columns, 5)
-            myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-            myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
+            myTermites(i).Move(FacilityLayoutModel, Rows, Columns)
 
             'If a termite didn't have a tile before but is now on a space with an un-owned tile, pick it up
             If FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
@@ -475,10 +449,7 @@ Public Class Form1
                 ElseIf myTermites(i).HasTile = False Then
                     Exit Do
                 End If
-                NoLazinessAllowed(i)
-                MarchMarchMarch(i, Rows, Columns, 5)
-                myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-                myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
+                myTermites(i).Move(FacilityLayoutModel, Rows, Columns)
                 counter = counter + 1
                 'If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
                 If counter > 40 Then
@@ -486,10 +457,7 @@ Public Class Form1
                         DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                     Else
                         Do
-                            NoLazinessAllowed(i)
-                            MarchMarchMarch(i, Rows, Columns, 5)
-                            myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-                            myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
+                            myTermites(i).Move(FacilityLayoutModel, Rows, Columns)
                         Loop Until FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                         DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                     End If
@@ -519,10 +487,7 @@ Public Class Form1
         End If
 
         For i = HoardingTermite To numtermites - 1
-            NoLazinessAllowed(i)
-            MarchMarchMarch(i, rows, columns, upperlimit)
-            myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-            myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
+            myTermites(i).Move(FacilityLayoutModel, rows, columns)
 
             'If a termite didn't have a tile before but is now on a space with an un-owned tile, pick it up
             If FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = True Then
@@ -553,10 +518,7 @@ Public Class Form1
                     ElseIf myTermites(i).HasTile = False Then
                         Exit Do
                     End If
-                    NoLazinessAllowed(i)
-                    MarchMarchMarch(i, rows, columns, upperlimit)
-                    myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-                    myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
+                    myTermites(i).Move(FacilityLayoutModel, rows, columns)
                     counter = counter + 1
                     'If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
                     If counter > 40 Then
@@ -564,10 +526,7 @@ Public Class Form1
                             DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                         Else
                             Do
-                                NoLazinessAllowed(i)
-                                MarchMarchMarch(i, rows, columns, upperlimit)
-                                myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-                                myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
+                                myTermites(i).Move(FacilityLayoutModel, rows, columns)
                             Loop Until FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                             DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                         End If
@@ -587,10 +546,7 @@ Public Class Form1
                     ElseIf myTermites(i).HasTile = False Then
                         Exit Do
                     End If
-                    NoLazinessAllowed(i)
-                    MarchMarchMarch(i, rows, columns, upperlimit)
-                    myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-                    myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
+                    myTermites(i).Move(FacilityLayoutModel, rows, columns)
                     counter = counter + 1
                     'If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
                     If counter > 40 Then
@@ -598,10 +554,7 @@ Public Class Form1
                             DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                         Else
                             Do
-                                NoLazinessAllowed(i)
-                                MarchMarchMarch(i, rows, columns, upperlimit)
-                                myTermites(i).ColumnPos = myTermites(i).ColumnPos + myTermites(i).HorizDirection
-                                myTermites(i).RowPos = myTermites(i).RowPos + myTermites(i).VertDirection
+                                myTermites(i).Move(FacilityLayoutModel, rows, columns)
                             Loop Until FacilityLayoutModel.IsTileAssigned(myTermites(i).RowPos, myTermites(i).ColumnPos) = False
                             DropTile(myTermites(i).RowPos, myTermites(i).ColumnPos, i)
                         End If
@@ -745,7 +698,7 @@ Public Class Form1
                     Next
                     y = 0
                     Do
-                        ReorganizationMethodScholar(Rows - 1, Columns - 1, myNumTermites - 1)
+                        ReorganizationMethodScholar(Rows, Columns, myNumTermites - 1)
                         TileRefresher(Rows, Columns)
                         y = y + 1
                     Loop Until y = 50

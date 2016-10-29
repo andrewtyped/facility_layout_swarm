@@ -8,6 +8,7 @@ namespace FaciltyLayout.Core.Models
 {
     public class Termites
     {
+        private Random rand = new Random();
         /// <summary>
         /// How far up/down should I go each turn
         /// </summary>
@@ -56,6 +57,30 @@ namespace FaciltyLayout.Core.Models
                 //Yes, this is right. Think about it. Rows top to bottom, columns left to right
                 return new Position(RowPos + VertDirection, ColumnPos + HorizDirection); 
             }
+        }
+
+        public void Move(FacilityLayoutModel facility, int? maxRow = null, int? maxColumn = null)
+        {
+            if (!IsDirectionValid(facility, maxRow, maxColumn))
+                ChooseNewDirection(facility, maxRow, maxColumn);
+
+            RowPos = NextPosition.Row;
+            ColumnPos = NextPosition.Column;
+        }
+
+        public void ChooseNewDirection(FacilityLayoutModel facility, int? maxRow = null, int? maxColumn = null)
+        {
+            do
+            {
+                HorizDirection = rand.Next(0, 5) - 2;
+                VertDirection = rand.Next(0, 5) - 2;
+            } while (!IsDirectionValid(facility, maxRow, maxColumn));
+        }
+
+        private bool IsDirectionValid(FacilityLayoutModel facility, int? maxRow = null, int? maxColumn = null)
+        {
+            return !(HorizDirection == 0 && VertDirection == 0) &&
+                facility.IsPositionValid(NextPosition, maxRow, maxColumn);
         }
     }
 }

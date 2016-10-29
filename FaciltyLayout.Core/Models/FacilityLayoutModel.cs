@@ -111,6 +111,7 @@ namespace FaciltyLayout.Core.Models
         /// </summary>
         public bool IsPositionValid(Position position, int? maxRow = null, int? maxColumn = null)
         {
+            int i = 1;
             return position.Row >= 0 && position.Row < (maxRow ?? LayoutArea.Rows) &&
                 position.Column >= 0 && position.Column < (maxColumn ?? LayoutArea.Columns) &&
                 IsTileFixed(position) == false;
