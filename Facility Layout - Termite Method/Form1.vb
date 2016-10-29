@@ -204,33 +204,12 @@ Public Class Form1
     End Function
     'Redirects termite if fixed dept or wall is encountered
     Private Sub MarchMarchMarch(ByVal i As Integer, ByVal rows As Integer, ByVal columns As Integer, ByVal upperlimit As Integer)
-
-
         'Say what the termites should do in the event they encounter a wall
-        If myTermites(i).ColumnPos + myTermites(i).HorizDirection < 0 Or
-            myTermites(i).ColumnPos + myTermites(i).HorizDirection >= columns Or
-            myTermites(i).RowPos + myTermites(i).VertDirection < 0 Or
-            myTermites(i).RowPos + myTermites(i).VertDirection >= rows Then
+        If FacilityLayoutModel.IsPositionValid(myTermites(i).NextPosition, rows, columns) = False Then
             Do
                 myTermites(i).HorizDirection = RandomRow.Next(0, upperlimit) - 2
                 myTermites(i).VertDirection = RandomRow.Next(0, upperlimit) - 2
-            Loop Until myTermites(i).ColumnPos + myTermites(i).HorizDirection > 0 AndAlso
-                       myTermites(i).ColumnPos + myTermites(i).HorizDirection < columns AndAlso
-                       myTermites(i).RowPos + myTermites(i).VertDirection > 0 AndAlso
-                       myTermites(i).RowPos + myTermites(i).VertDirection < rows
-        End If
-
-        If FacilityLayoutModel.IsTileFixed(myTermites(i).RowPos + myTermites(i).VertDirection,
-                                 myTermites(i).ColumnPos + myTermites(i).HorizDirection) = True Then
-            Do
-                myTermites(i).HorizDirection = RandomRow.Next(0, upperlimit) - 2
-                myTermites(i).VertDirection = RandomRow.Next(0, upperlimit) - 2
-            Loop Until myTermites(i).ColumnPos + myTermites(i).HorizDirection > 0 AndAlso
-                       myTermites(i).ColumnPos + myTermites(i).HorizDirection < columns AndAlso
-                       myTermites(i).RowPos + myTermites(i).VertDirection > 0 AndAlso
-                       myTermites(i).RowPos + myTermites(i).VertDirection < rows AndAlso
-                       FacilityLayoutModel.IsTileFixed(myTermites(i).RowPos + myTermites(i).VertDirection,
-                                 myTermites(i).ColumnPos + myTermites(i).HorizDirection) = False
+            Loop Until FacilityLayoutModel.IsPositionValid(myTermites(i).NextPosition, rows, columns) = True
         End If
     End Sub
 

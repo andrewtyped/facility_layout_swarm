@@ -104,5 +104,16 @@ namespace FacilityLayout.Core.Tests
                 }
             }
         }
+
+        [TestCase(-1,1, false)]
+        [TestCase(12, -1, false)]
+        [TestCase(22,1,false)]
+        [TestCase(1,22,false)]
+        [TestCase(1,1,false)] //fixed dept
+        [TestCase(8,8,true)] //normal tile
+        public void IsPositionLegal_Validates_Positions_In_The_Layout_Area(int row, int column, bool expectedIsValid)
+        {
+            Assert.AreEqual(expectedIsValid, facilityLayout.IsPositionValid(new Position(row, column)));
+        }
     }
 }

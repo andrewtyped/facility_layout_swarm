@@ -105,6 +105,17 @@ namespace FaciltyLayout.Core.Models
             Facility[position.Row, position.Column] = 0;
         }
 
+        /// <summary>
+        /// Returns true if the position is on the board and not over a fixed tile,
+        /// false otherwise.
+        /// </summary>
+        public bool IsPositionValid(Position position, int? maxRow = null, int? maxColumn = null)
+        {
+            return position.Row >= 0 && position.Row < (maxRow ?? LayoutArea.Rows) &&
+                position.Column >= 0 && position.Column < (maxColumn ?? LayoutArea.Columns) &&
+                IsTileFixed(position) == false;
+        }
+
         public bool IsTileFixed(int row, int column)
         {
             var departmentId = Facility[row, column];

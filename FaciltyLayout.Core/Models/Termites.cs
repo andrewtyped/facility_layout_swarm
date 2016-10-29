@@ -44,5 +44,18 @@ namespace FaciltyLayout.Core.Models
                 return new Position(RowPos, ColumnPos);
             }
         }
+
+        /// <summary>
+        /// Returns the next position of the termite given its current position 
+        /// and horizontal/vertical directions
+        /// </summary>
+        public Position NextPosition
+        {
+            get
+            {
+                //Yes, this is right. Think about it. Rows top to bottom, columns left to right
+                return new Position(RowPos + VertDirection, ColumnPos + HorizDirection); 
+            }
+        }
     }
 }
