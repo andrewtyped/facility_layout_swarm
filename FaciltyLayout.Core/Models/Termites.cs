@@ -29,14 +29,6 @@ namespace FaciltyLayout.Core.Models
         /// </summary>
         public bool HasTile { get; set; }
         /// <summary>
-        /// Will I only pick up a certain kind of tile?
-        /// </summary>
-        public bool SpecificTile { get; set; }
-        /// <summary>
-        /// What is the only kind of tile I'll pick up (optional)
-        /// </summary>
-        public int WhatSpecificTile { get; set; }
-        /// <summary>
         /// What kind of tile do I have
         /// </summary>
         public int TileDept { get; set; }

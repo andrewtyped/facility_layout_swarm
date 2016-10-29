@@ -470,25 +470,13 @@ Public Class Form1
                             Roulette = 0
                         End If
                         If Roulette = 0 Then
-                            If myTermites(i).SpecificTile = True Then
-                                If myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = myTermites(i).WhatSpecificTile Then
-                                    myTermites(i).HasTile = True
-                                    myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = True
-                                    myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
-                                    Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
-                                    Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                                    'Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-                                    FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
-                                End If
-                            ElseIf myTermites(i).SpecificTile = False Then
-                                myTermites(i).HasTile = True
-                                myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = True
-                                myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
-                                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
-                                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                                'Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
-                                FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
-                            End If
+                            myTermites(i).HasTile = True
+                            myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = True
+                            myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
+                            Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
+                            Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
+                            'Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Refresh()
+                            FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                         End If
                     End If
                 End If
@@ -564,23 +552,12 @@ Public Class Form1
                         SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(myTermites(i).Position, myFacilityMatrix)
                         Roulette = RandomRow.Next(0, SimilarAdjTileCount ^ 1.75 + 1)
                         If Roulette = 0 Then
-                            If myTermites(i).SpecificTile = True Then
-                                If myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos) = myTermites(i).WhatSpecificTile Then
-                                    myTermites(i).HasTile = True
-                                    myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = True
-                                    myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
-                                    Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
-                                    Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                                    FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
-                                End If
-                            ElseIf myTermites(i).SpecificTile = False Then
-                                myTermites(i).HasTile = True
-                                myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = True
-                                myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
-                                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
-                                Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
-                                FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
-                            End If
+                            myTermites(i).HasTile = True
+                            myTermiteOwnedTile(myTermites(i).RowPos, myTermites(i).ColumnPos) = True
+                            myTermites(i).TileDept = myFacilityMatrix(myTermites(i).RowPos, myTermites(i).ColumnPos)
+                            Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).BackColor = Color.Black
+                            Tile(myTermites(i).RowPos, myTermites(i).ColumnPos).Text = ""
+                            FacilityLayoutModel.SetTile(myTermites(i).Position, 0)
                         End If
                     End If
                 End If
@@ -871,10 +848,6 @@ Public Class Form1
                 myFrozenDepts(i) = False
                 myCountdFrznDepts(i) = False
             Next
-            For i = 0 To myNumTermites - 1
-                myTermites(i).SpecificTile = False
-            Next
-
 
             '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!STAGE 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             Do
