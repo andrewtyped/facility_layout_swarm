@@ -14,9 +14,7 @@ Public Class Form1
     Private TileRefreshCounter As Integer = 0
     Private myTileColors(,) As Integer
     Private myLoopCounter = 0
-    Private myCountdFrznDepts() As Boolean
     Private myLoopPhase As Integer
-    Private myNumFrozenDepts As Integer = 0
     Private myGravStart As Integer
     Private TransformVDC As Integer
     Private facilityEvaluator As New FacilityEvaluator()
@@ -45,10 +43,6 @@ Public Class Form1
                 End If
             Next
         Next
-        If myCountdFrznDepts(dept) = False Then
-            myNumFrozenDepts = myNumFrozenDepts + 1
-            myCountdFrznDepts(dept) = True
-        End If
     End Sub
     'Creates the facility field, places tiles randomly across the field
     Friend Function GenerateFacilitySwarm(facilityStats As FacilityStats) As FacilityLayoutModel
@@ -126,7 +120,6 @@ Public Class Form1
         Dim ContigIndicator As Boolean
         Dim TotalContig
         Dim VDCP As Integer
-        ReDim myCountdFrznDepts(FacilityStats.DepartmentCount)
 
         Do
             ReorganizationMethod1(Rows, Columns)
@@ -347,10 +340,6 @@ Public Class Form1
                     For b = 0 To columns - 1
                         myTermiteOwnedTile(a, b) = False
                     Next
-                Next
-                myNumFrozenDepts = 0
-                For a = 0 To FacilityStats.DepartmentCount
-                    myCountdFrznDepts(a) = False
                 Next
                 y = 0
                 Do
@@ -638,7 +627,6 @@ Public Class Form1
         Dim n As Integer = 0
         Dim StartTime, StopTime As DateTime
         Dim RunTime As TimeSpan
-        ReDim myCountdFrznDepts(FacilityStats.DepartmentCount)
         Dim i, j, y As Integer
 
         Dim adjTilesContainSameDepartment As Boolean = False
@@ -685,10 +673,6 @@ Public Class Form1
                         For b = 0 To Columns - 1
                             myTermiteOwnedTile(a, b) = False
                         Next
-                    Next
-                    myNumFrozenDepts = 0
-                    For a = 0 To FacilityStats.DepartmentCount
-                        myCountdFrznDepts(a) = False
                     Next
                     y = 0
                     Do
@@ -740,10 +724,6 @@ Public Class Form1
                         myTermiteOwnedTile(i, j) = False
                     Next
                 Next
-                myNumFrozenDepts = 0
-                For i = 0 To FacilityStats.DepartmentCount
-                    myCountdFrznDepts(i) = False
-                Next
                 RealisticCollection(Rows, Columns)
                 TileRefresher(Rows, Columns)
                 Rows = Rows - 1
@@ -760,14 +740,10 @@ Public Class Form1
             n = 0
             TileRefresher(Rows, Columns)
             myLoopPhase = 2
-            myNumFrozenDepts = 0
             For i = 0 To Rows - 1
                 For j = 0 To Columns - 1
                     myTermiteOwnedTile(i, j) = False
                 Next
-            Next
-            For i = 0 To FacilityStats.DepartmentCount
-                myCountdFrznDepts(i) = False
             Next
 
             '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!STAGE 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
