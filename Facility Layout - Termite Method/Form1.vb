@@ -261,29 +261,8 @@ Public Class Form1
         FacilityLayoutModel = GenerateFacilitySwarm(facilityStats)
         myFacilityMatrix = FacilityLayoutModel.Facility
 
-        Dim objMatrixFile As New System.IO.StreamWriter("C:\Users\Andrew\Documents\IE 590\FacilitySwarm.txt")
-        Dim strMatrix As String = Nothing
-        Dim i, j As Integer
-        Dim Rows As Integer = Math.Round(Math.Sqrt(2 * (facilityStats.FacilitySize.Rows ^ 2)))
-        Dim Columns As Integer = Math.Round(Math.Sqrt(2 * (facilityStats.FacilitySize.Columns ^ 2)))
-        If TxtRows.Text <> "" Then
-            Integer.TryParse(TxtRows.Text, Rows)
-        End If
-        If TxtColumns.Text <> "" Then
-            Integer.TryParse(TxtColumns.Text, Columns)
-        End If
-        For i = 0 To Rows - 1
-            For j = 0 To Columns - 1
-                If myFacilityMatrix(i, j).ToString.Length = 1 Then
-                    strMatrix = strMatrix & myFacilityMatrix(i, j).ToString & "  "
-                Else
-                    strMatrix = strMatrix & myFacilityMatrix(i, j).ToString & " "
-                End If
-            Next j
-            strMatrix = strMatrix & vbCrLf
-        Next i
-        objMatrixFile.Write(strMatrix)
-        objMatrixFile.Close()
+        Dim Rows As Integer = FacilityLayoutModel.LayoutArea.Rows
+        Dim Columns As Integer = FacilityLayoutModel.LayoutArea.Columns
 
         Dim color As New Color
 
