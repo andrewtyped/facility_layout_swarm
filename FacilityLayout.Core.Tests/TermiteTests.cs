@@ -2,6 +2,7 @@
 using FaciltyLayout.Core.Models;
 using NUnit.Framework;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -86,6 +87,40 @@ namespace FacilityLayout.Core.Tests
             termite.Move(facilityLayout, 19, 19);
             Assert.AreNotEqual(21, termite.RowPos);
             Assert.AreNotEqual(21, termite.ColumnPos);
+        }
+
+        [Test]
+        public void Termites_Have_A_Random_Order_In_Which_They_Search_Surrounding_Tiles_For_A_Place_To_Set_The_Tile_Theyre_Holding()
+        {
+            //The value is the aggregate of the index at which the keyed position
+            //appears in each termite's search order.
+            var positionIndexSums = new ConcurrentDictionary<Position, int>();
+
+            Parallel.For(0, 500000, (i) =>
+             {
+                 var termite = new Termites();
+                 var searchOrder = termite.TileSearchOrder.ToList();
+
+                 for (int j = 1; j <= 9; j++)
+                 {
+                     positionIndexSums.AddOrUpdate(searchOrder[j - 1], 0, (pos, currentSum) => currentSum + j);
+                 }
+
+                 Assert.AreEqual(9, searchOrder.Count);
+             });
+
+            Assert.AreEqual(9, positionIndexSums.Count);
+            CollectionAssert.AreEquivalent(RelativeTiles.Positions,positionIndexSums.Keys);
+
+            var idealAverage = 2500000.00;
+            var average = positionIndexSums.Values.Average();
+
+            foreach(var indexSum in positionIndexSums.Values)
+            {
+                //Over time, Each position should appear at each possible index
+                //in the termites' search orders, leading to a balanced index.
+                Assert.LessOrEqual(Math.Abs(idealAverage - average), 5.0);
+            }
         }
     }
 }

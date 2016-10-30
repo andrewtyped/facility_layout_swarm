@@ -9,6 +9,7 @@ namespace FaciltyLayout.Core.Models
     public class Termites
     {
         private Random rand = new Random();
+
         /// <summary>
         /// How far up/down should I go each turn
         /// </summary>
@@ -38,6 +39,12 @@ namespace FaciltyLayout.Core.Models
         /// </summary>
         public int TermiteType { get; set; }
 
+        /// <summary>
+        /// In what order should I look around me for empty spaces or tiles of 
+        /// the same department as I am holding?
+        /// </summary>
+        public IEnumerable<Position> TileSearchOrder { get; }
+
         public Position Position
         {
             get
@@ -57,6 +64,11 @@ namespace FaciltyLayout.Core.Models
                 //Yes, this is right. Think about it. Rows top to bottom, columns left to right
                 return new Position(RowPos + VertDirection, ColumnPos + HorizDirection); 
             }
+        }
+
+        public Termites()
+        {
+            TileSearchOrder = RelativeTiles.ShufflePositions();
         }
 
         public void Move(FacilityLayoutModel facility, int? maxRow = null, int? maxColumn = null)

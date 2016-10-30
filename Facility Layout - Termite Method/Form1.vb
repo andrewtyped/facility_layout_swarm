@@ -153,44 +153,22 @@ Public Class Form1
         Dim Checked(2, 2) As Boolean
         Dim SearchOrder(8, 1) As Integer
 
-        If myLoopPhase = 1 Then
-            For i = 0 To 2
-                For j = 0 To 2
-                    Checked(i, j) = False
-                Next
+        For i = 0 To 2
+            For j = 0 To 2
+                Checked(i, j) = False
             Next
+        Next
 
-            For a = 0 To 8
-                Do
-                    i = RandomRow.Next(0, 3) - 1
-                    j = RandomRow.Next(0, 3) - 1
-                    SearchOrder(a, 0) = RandomRow.Next(0, 3) - 1
-                    SearchOrder(a, 1) = RandomRow.Next(0, 3) - 1
-                Loop Until Checked(i + 1, j + 1) = False
-                Checked(i + 1, j + 1) = True
-            Next
-            a = 0
-        End If
-        If myLoopPhase = 2 Then
-            a = 0
-            For i = 0 To 2
-                For j = 0 To 2
-                    Checked(i, j) = False
-                Next
-            Next
-
-            For a = 0 To 8
-                Do
-                    i = RandomRow.Next(0, 3) - 1
-                    j = RandomRow.Next(0, 3) - 1
-                    SearchOrder(a, 0) = RandomRow.Next(0, 3) - 1
-                    SearchOrder(a, 1) = RandomRow.Next(0, 3) - 1
-                Loop Until Checked(i + 1, j + 1) = False
-                Checked(i + 1, j + 1) = True
-            Next
-        End If
+        For a = 0 To 8
+            Do
+                i = RandomRow.Next(0, 3) - 1
+                j = RandomRow.Next(0, 3) - 1
+                SearchOrder(a, 0) = RandomRow.Next(0, 3) - 1
+                SearchOrder(a, 1) = RandomRow.Next(0, 3) - 1
+            Loop Until Checked(i + 1, j + 1) = False 'Adding 1 to i and j offsets the subtraction we did to allow checking of negative rows/cols
+            Checked(i + 1, j + 1) = True
+        Next
         Return SearchOrder
-
     End Function
     Friend Sub OpenToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OpenToolStripMenuItem.Click
         ofdLoadSetup.InitialDirectory = "C:/"

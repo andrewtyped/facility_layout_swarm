@@ -53,6 +53,7 @@
     <Compile Include="Models\FlowStats.cs" />
     <Compile Include="Models\Position.cs" />
     <Compile Include="Models\GridSize.cs" />
+    <Compile Include="Models\RelativeTiles.cs" />
     <Compile Include="Models\TermiteActionEventArgs.cs" />
     <Compile Include="Models\Termites.cs" />
     <Compile Include="PortedFunctions.cs" />
