@@ -32,9 +32,9 @@ namespace FaciltyLayout.Core.Models
         {
             var result = Positions.ToList();
 
-            for(var i = 0; i < result.Count; i++)
+            lock (locker)
             {
-                lock (locker)
+                for (var i = 0; i < result.Count; i++)
                 {
                     Swap(result, i, rand.Next(i, result.Count));
                 }
