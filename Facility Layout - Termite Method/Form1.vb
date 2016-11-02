@@ -59,36 +59,36 @@ Public Class Form1
     Private Sub GreedyTermite(ByVal TermiteNumber As Integer, ByVal rows As Integer, ByVal columns As Integer)
         Dim i, j As Integer
         Dim ClosestFound As Boolean = False
-        Dim ClosestEmpty(,) As Integer = LookAround()
-        Dim AdjCheck(,) As Integer = LookAround()
+
+        Dim termite = myTermites(TermiteNumber)
         'Check adjacent spaces for equivalent tiles
-        For i = 0 To 8
+        For i = 0 To termite.TileSearchOrder.Count - 1
+            Dim adjacentTileSearchColumn = termite.ColumnPos - termite.TileSearchOrder(i).Column
+            Dim adjacentTileSearchRow = termite.RowPos - termite.TileSearchOrder(i).Row
+
             'Termite must not look outside of facility field boundaries
-            If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) AndAlso myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) <= rows - 1 Then
-                If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) AndAlso myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) <= columns - 1 Then
-                    If myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0),
-                                        myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)) = myTermites(TermiteNumber).TileDept Then
-                        For j = 0 To 8
-                            If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) AndAlso
-                                myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) <= rows - 1 Then
-                                If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) AndAlso
-                                    myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) <= columns - 1 Then
-                                    If FacilityLayoutModel.IsTileAssigned(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0),
-                                                       myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)) = False Then
+            If 0 <= adjacentTileSearchColumn AndAlso adjacentTileSearchColumn < columns Then
+                If 0 <= adjacentTileSearchRow AndAlso adjacentTileSearchRow < rows Then
+                    If myFacilityMatrix(adjacentTileSearchRow, adjacentTileSearchColumn) = termite.TileDept Then
+                        For j = 0 To termite.EmptyTileSearchOrder.Count - 1
+
+                            Dim emptyTileSearchColumn = adjacentTileSearchColumn - termite.EmptyTileSearchOrder(j).Column
+                            Dim emptyTileSearchRow = adjacentTileSearchRow - termite.EmptyTileSearchOrder(j).Row
+
+                            If 0 <= emptyTileSearchColumn AndAlso emptyTileSearchColumn <= columns - 1 Then
+                                If 0 <= emptyTileSearchRow AndAlso emptyTileSearchRow <= rows - 1 Then
+                                    If FacilityLayoutModel.IsTileAssigned(emptyTileSearchRow, emptyTileSearchColumn) = False Then
                                         ClosestFound = True
-                                        Dim X, Y As Integer
-                                        X = myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0)
-                                        Y = myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)
-                                        Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0),
-                                        myTileColors(myTermites(TermiteNumber).TileDept, 1),
-                                        myTileColors(myTermites(TermiteNumber).TileDept, 2))
-                                        myTermites(TermiteNumber).ColumnPos = Y
-                                        myTermites(TermiteNumber).RowPos = X
-                                        myTermiteOwnedTile(X, Y) = False
-                                        FacilityLayoutModel.SetTile(X, Y, myTermites(TermiteNumber).TileDept)
-                                        Tile(X, Y).Text = myTermites(TermiteNumber).TileDept.ToString
-                                        myTermites(TermiteNumber).HasTile = False
-                                        myTermites(TermiteNumber).TileDept = Nothing
+                                        Tile(emptyTileSearchRow, emptyTileSearchColumn).BackColor = Color.FromArgb(myTileColors(termite.TileDept, 0),
+                                            myTileColors(termite.TileDept, 1),
+                                            myTileColors(termite.TileDept, 2))
+                                        termite.ColumnPos = emptyTileSearchColumn
+                                        termite.RowPos = emptyTileSearchRow
+                                        myTermiteOwnedTile(emptyTileSearchRow, emptyTileSearchColumn) = False
+                                        FacilityLayoutModel.SetTile(emptyTileSearchRow, emptyTileSearchColumn, termite.TileDept)
+                                        Tile(emptyTileSearchRow, emptyTileSearchColumn).Text = termite.TileDept.ToString
+                                        termite.HasTile = False
+                                        termite.TileDept = Nothing
                                         Exit For
                                     End If
                                 End If
@@ -124,6 +124,8 @@ Public Class Form1
         Do
             ReorganizationMethod1(Rows, Columns)
 
+            TileRefresher(Rows, Columns)
+
             For i = 1 To FacilityStats.DepartmentCount
                 ContigIndicator = contiguityTester.DepartmentIsContiguous(i, myFacilityMatrix)
 
@@ -145,31 +147,6 @@ Public Class Form1
         Tile(e.Position.Row, e.Position.Column).Text = ""
         Tile(e.Position.Row, e.Position.Column).Refresh()
     End Sub
-    'This funcion defines in what order the termites should look around them for tiles.
-    'Depending on the phase of the program, the termites may have a biased direction
-    'In their search.
-    Private Function LookAround()
-        Dim i, j, a As Integer
-        Dim Checked(2, 2) As Boolean
-        Dim SearchOrder(8, 1) As Integer
-
-        For i = 0 To 2
-            For j = 0 To 2
-                Checked(i, j) = False
-            Next
-        Next
-
-        For a = 0 To 8
-            Do
-                i = RandomRow.Next(0, 3) - 1
-                j = RandomRow.Next(0, 3) - 1
-                SearchOrder(a, 0) = RandomRow.Next(0, 3) - 1
-                SearchOrder(a, 1) = RandomRow.Next(0, 3) - 1
-            Loop Until Checked(i + 1, j + 1) = False 'Adding 1 to i and j offsets the subtraction we did to allow checking of negative rows/cols
-            Checked(i + 1, j + 1) = True
-        Next
-        Return SearchOrder
-    End Function
     Friend Sub OpenToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OpenToolStripMenuItem.Click
         ofdLoadSetup.InitialDirectory = "C:/"
         ofdLoadSetup.Title = "Load Facility Data"
@@ -294,7 +271,7 @@ Public Class Form1
         Next
 
         For x = 0 To myNumTermites - 1
-            myTermites(x).Move(FacilityLayoutModel, rows, columns)
+            myTermites(x).Move(FacilityLayoutModel, rows - 1, columns - 1)
             myTermites(x).TermiteType = RandomRow.Next(0, 3)
             If myTermites(x).TermiteType < 2 Then
                 myTermites(x).TermiteType = 0
@@ -539,39 +516,37 @@ Public Class Form1
     Private Sub ScholarTermite(ByVal TermiteNumber As Integer, ByVal rows As Integer, ByVal columns As Integer)
         Dim i, j As Integer
         Dim ClosestFound As Boolean = False
-        Dim ClosestEmpty(,) As Integer = LookAround()
-        Dim AdjCheck(,) As Integer = LookAround()
         Dim rand As Integer = RandomRow.Next(0, 100)
         'Check adjacent spaces for equivalent tiles
 
-        For i = 0 To 8
+        Dim termite = myTermites(TermiteNumber)
+
+        For i = 0 To termite.TileSearchOrder.Count - 1
+            Dim adjacentTileSearchColumn = termite.ColumnPos - termite.TileSearchOrder(i).Column
+            Dim adjacentTileSearchRow = termite.RowPos - termite.TileSearchOrder(i).Row
             'Termite must not look outside of facility field boundaries
-            If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) AndAlso myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) <= rows - 1 Then
-                If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) AndAlso myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) <= columns - 1 Then
-                    If FacilityLayoutModel.IsTileAssigned(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0), myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)) = True Then
-                        If rand <= 100 * (FacilityStats.Flows(myTermites(TermiteNumber).TileDept).Flows(myFacilityMatrix(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0),
-                                myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1)))) / (FacilityStats.Flows(myTermites(TermiteNumber).TileDept).FlowSum) Then
-                            For j = 0 To 8
-                                If 0 <= myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) AndAlso
-                                    myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1) <= rows - 1 Then
-                                    If 0 <= myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) AndAlso
-                                        myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0) <= columns - 1 Then
-                                        If FacilityLayoutModel.IsTileAssigned(myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0),
-                                                           myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)) = False Then
+            If 0 <= adjacentTileSearchColumn AndAlso adjacentTileSearchColumn < columns Then
+                If 0 <= adjacentTileSearchRow AndAlso adjacentTileSearchRow < rows Then
+                    If FacilityLayoutModel.IsTileAssigned(adjacentTileSearchRow, adjacentTileSearchColumn) = True Then
+                        If rand <= 100 * (FacilityStats.Flows(termite.TileDept).Flows(myFacilityMatrix(adjacentTileSearchRow,
+                                adjacentTileSearchColumn))) / (FacilityStats.Flows(termite.TileDept).FlowSum) Then
+                            For j = 0 To termite.EmptyTileSearchOrder.Count - 1
+                                Dim emptyTileSearchColumn = adjacentTileSearchColumn - termite.EmptyTileSearchOrder(j).Column
+                                Dim emptyTileSearchRow = adjacentTileSearchRow - termite.EmptyTileSearchOrder(j).Row
+                                If 0 <= emptyTileSearchColumn AndAlso emptyTileSearchColumn < columns Then
+                                    If 0 <= emptyTileSearchRow AndAlso emptyTileSearchRow < rows Then
+                                        If FacilityLayoutModel.IsTileAssigned(emptyTileSearchRow, emptyTileSearchColumn) = False Then
                                             ClosestFound = True
-                                            Dim X, Y As Integer
-                                            X = myTermites(TermiteNumber).RowPos - AdjCheck(i, 0) - ClosestEmpty(j, 0)
-                                            Y = myTermites(TermiteNumber).ColumnPos - AdjCheck(i, 1) - ClosestEmpty(j, 1)
-                                            Tile(X, Y).BackColor = Color.FromArgb(myTileColors(myTermites(TermiteNumber).TileDept, 0),
-                                            myTileColors(myTermites(TermiteNumber).TileDept, 1),
-                                            myTileColors(myTermites(TermiteNumber).TileDept, 2))
-                                            myTermites(TermiteNumber).ColumnPos = Y
-                                            myTermites(TermiteNumber).RowPos = X
-                                            myTermiteOwnedTile(X, Y) = False
-                                            FacilityLayoutModel.SetTile(X, Y, myTermites(TermiteNumber).TileDept)
-                                            Tile(X, Y).Text = myTermites(TermiteNumber).TileDept.ToString
-                                            myTermites(TermiteNumber).HasTile = False
-                                            myTermites(TermiteNumber).TileDept = Nothing
+                                            Tile(emptyTileSearchRow, emptyTileSearchColumn).BackColor = Color.FromArgb(myTileColors(termite.TileDept, 0),
+                                                myTileColors(termite.TileDept, 1),
+                                                myTileColors(termite.TileDept, 2))
+                                            termite.ColumnPos = emptyTileSearchColumn
+                                            termite.RowPos = emptyTileSearchRow
+                                            myTermiteOwnedTile(emptyTileSearchRow, emptyTileSearchColumn) = False
+                                            FacilityLayoutModel.SetTile(emptyTileSearchRow, emptyTileSearchColumn, termite.TileDept)
+                                            Tile(emptyTileSearchRow, emptyTileSearchColumn).Text = termite.TileDept.ToString
+                                            termite.HasTile = False
+                                            termite.TileDept = Nothing
                                             Exit For
                                         End If
                                     End If
@@ -655,7 +630,7 @@ Public Class Form1
                     y = 0
                     Do
                         ReorganizationMethodScholar(Rows, Columns, myNumTermites - 1)
-                        TileRefresher(Rows, Columns)
+                        'TileRefresher(Rows, Columns)
                         y = y + 1
                     Loop Until y = 50
 

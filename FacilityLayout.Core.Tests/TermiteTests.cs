@@ -101,25 +101,26 @@ namespace FacilityLayout.Core.Tests
                  var termite = new Termites();
                  var searchOrder = termite.TileSearchOrder.ToList();
 
-                 for (int j = 1; j <= 9; j++)
+                 for (int j = 1; j <= searchOrder.Count; j++)
                  {
                      positionIndexSums.AddOrUpdate(searchOrder[j - 1], 0, (pos, currentSum) => currentSum + j);
                  }
 
-                 Assert.AreEqual(9, searchOrder.Count);
+                 Assert.LessOrEqual(5, searchOrder.Count);
+                 Assert.Greater(10, searchOrder.Count);
              });
 
             Assert.AreEqual(9, positionIndexSums.Count);
             CollectionAssert.AreEquivalent(RelativeTiles.Positions,positionIndexSums.Keys);
 
-            var idealAverage = 2500000.00;
+            var idealAverage = 1610500;
             var average = positionIndexSums.Values.Average();
 
             foreach(var indexSum in positionIndexSums.Values)
             {
                 //Over time, Each position should appear at each possible index
                 //in the termites' search orders, leading to a balanced index.
-                Assert.LessOrEqual(Math.Abs(idealAverage - average), 5.0);
+                Assert.LessOrEqual(Math.Abs(idealAverage - average), 1500.0);
             }
         }
     }

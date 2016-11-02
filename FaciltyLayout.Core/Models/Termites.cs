@@ -8,7 +8,9 @@ namespace FaciltyLayout.Core.Models
 {
     public class Termites
     {
-        private Random rand = new Random();
+        //Share rand between all termites to avoid bias due to creatig too many
+        //randoms in a small time frame
+        private static Random rand = new Random();
 
         /// <summary>
         /// How far up/down should I go each turn
@@ -43,7 +45,8 @@ namespace FaciltyLayout.Core.Models
         /// In what order should I look around me for empty spaces or tiles of 
         /// the same department as I am holding?
         /// </summary>
-        public IEnumerable<Position> TileSearchOrder { get; }
+        public IReadOnlyList<Position> TileSearchOrder { get; private set; }
+        public IReadOnlyList<Position> EmptyTileSearchOrder { get; private set; }
 
         public Position Position
         {
@@ -68,7 +71,14 @@ namespace FaciltyLayout.Core.Models
 
         public Termites()
         {
-            TileSearchOrder = RelativeTiles.ShufflePositions();
+            //The range 5 to 9 appears to be magic for the application. Not having the termite
+            //check every surrounding tile keeps the tiles from being too "sticky" - not having
+            //enough mobility to overcome local optima that prevent departments from joining
+            //contiguously. On the other hand, not checking enough tiles makes the tiles move
+            //too freely, and they never form reliable clusters.
+            var rn = rand.Next(5, 10);
+            TileSearchOrder = RelativeTiles.ShufflePositions().Take(rn).ToList();
+            EmptyTileSearchOrder = RelativeTiles.ShufflePositions().Take(rn).ToList();
         }
 
         public void Move(FacilityLayoutModel facility, int? maxRow = null, int? maxColumn = null)
