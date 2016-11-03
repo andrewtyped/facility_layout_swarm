@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace FaciltyLayout.Core.Models
 {
-    public class TermiteActionEventArgs
+    public class TileEventArgs
     {
         public Position Position { get; }
         public int DepartmentId { get; }
-        public TermiteActionEventArgs(Termites termite)
+        public TileEventArgs(Position position, int departmentId)
         {
-            Position = termite.Position;
-            DepartmentId = termite.TileDept;
+            Position = position;
+            DepartmentId = departmentId;
         }
     }
 }

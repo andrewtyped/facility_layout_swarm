@@ -51,10 +51,12 @@
     <Compile Include="Models\FacilityLayoutModel.cs" />
     <Compile Include="Models\FacilityStats.cs" />
     <Compile Include="Models\FlowStats.cs" />
+    <Compile Include="Models\GreedyTermite.cs" />
     <Compile Include="Models\Position.cs" />
     <Compile Include="Models\GridSize.cs" />
     <Compile Include="Models\RelativeTiles.cs" />
-    <Compile Include="Models\TermiteActionEventArgs.cs" />
+    <Compile Include="Models\ScholarTermite.cs" />
+    <Compile Include="Models\TileEventArgs.cs" />
     <Compile Include="Models\Termites.cs" />
     <Compile Include="PortedFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

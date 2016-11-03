@@ -14,7 +14,7 @@ namespace FaciltyLayout.Core
 
         public bool[,] OwnedTiles { get; private set; }
 
-        public event EventHandler<TermiteActionEventArgs> TermiteRemovedTile;
+        public event EventHandler<TileEventArgs> TermiteRemovedTile;
 
         public TermiteManager(FacilityLayoutModel facilityLayout)
         {
@@ -41,13 +41,22 @@ namespace FaciltyLayout.Core
 
         private Termites BuildTermite(int typeRatio)
         {
-            var termite = new Termites();
+            var termite = SetTermiteType(typeRatio);
             SetTermitePosition(termite);
-            SetTermiteType(termite, typeRatio);
             SetTermiteDirection(termite);
             TakeInitialTile(termite);
 
             return termite;
+        }
+
+        private Termites SetTermiteType(int typeRatio)
+        {
+            var number = rand.Next(0, typeRatio);
+
+            if (number < typeRatio - 1)
+                return new GreedyTermite();
+            else
+                return new ScholarTermite();
         }
 
         private void SetTermitePosition(Termites termite)
@@ -62,12 +71,6 @@ namespace FaciltyLayout.Core
 
             termite.RowPos = row;
             termite.ColumnPos = column;
-        }
-
-        private void SetTermiteType(Termites termite, int typeRatio)
-        {
-            var number = rand.Next(0, typeRatio);
-            termite.TermiteType = number < typeRatio - 1 ? 0 : 1;
         }
 
         private void SetTermiteDirection(Termites termite)
@@ -101,7 +104,7 @@ namespace FaciltyLayout.Core
 
         private void OnTermiteRemovedTile(Termites termite)
         {
-            TermiteRemovedTile?.Invoke(this, new TermiteActionEventArgs(termite));
+            TermiteRemovedTile?.Invoke(this, new TileEventArgs(termite.Position, termite.TileDept));
         }
     }
 }

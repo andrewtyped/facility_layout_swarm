@@ -10,7 +10,7 @@ namespace FaciltyLayout.Core.Models
     {
         //Share rand between all termites to avoid bias due to creatig too many
         //randoms in a small time frame
-        private static Random rand = new Random();
+        protected static Random rand = new Random();
 
         /// <summary>
         /// How far up/down should I go each turn
@@ -36,10 +36,6 @@ namespace FaciltyLayout.Core.Models
         /// What kind of tile do I have
         /// </summary>
         public int TileDept { get; set; }
-        /// <summary>
-        /// What type of termite am I?
-        /// </summary>
-        public int TermiteType { get; set; }
 
         /// <summary>
         /// In what order should I look around me for empty spaces or tiles of 
@@ -103,6 +99,38 @@ namespace FaciltyLayout.Core.Models
         {
             return !(HorizDirection == 0 && VertDirection == 0) &&
                 facility.IsPositionValid(NextPosition, maxRow, maxColumn);
+        }
+
+        public void DropTile(FacilityLayoutModel facilityLayoutModel)
+        {
+            facilityLayoutModel.SetTile(Position, TileDept);
+            HasTile = false;
+            TileDept = 0;
+        }
+
+        public void DropTile(FacilityLayoutModel facilityLayoutModel, int row, int column)
+        {
+            facilityLayoutModel.SetTile(row, column, TileDept);
+            HasTile = false;
+            TileDept = 0;
+        }
+
+        public virtual void FindDropPoint(FacilityLayoutModel facilityLayoutModel, FacilityStats facilityStats, int rows, int columns)
+        {
+
+        }
+
+        public T ChangeType<T>() where T:Termites, new()
+        {
+            var newTermite = new T();
+            newTermite.RowPos = RowPos;
+            newTermite.ColumnPos = ColumnPos;
+            newTermite.HorizDirection = HorizDirection;
+            newTermite.VertDirection = VertDirection;
+            newTermite.HasTile = HasTile;
+            newTermite.TileDept = TileDept;
+
+            return newTermite;
         }
     }
 }

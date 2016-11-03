@@ -88,11 +88,13 @@ namespace FaciltyLayout.Core.Models
         public void SetTile(int row, int column, int department)
         {
             Facility[row, column] = department;
+            OnTilePlaced(new Position(row, column), department);
         }
 
         public void SetTile(Position position, int department)
         {
             Facility[position.Row, position.Column] = department;
+            OnTilePlaced(position, department);
         }
 
         public void SetTileEmpty(int row, int column)
@@ -111,7 +113,6 @@ namespace FaciltyLayout.Core.Models
         /// </summary>
         public bool IsPositionValid(Position position, int? maxRow = null, int? maxColumn = null)
         {
-            int i = 1;
             return position.Row >= 0 && position.Row < (maxRow ?? LayoutArea.Rows) &&
                 position.Column >= 0 && position.Column < (maxColumn ?? LayoutArea.Columns) &&
                 IsTileFixed(position) == false;
@@ -139,6 +140,12 @@ namespace FaciltyLayout.Core.Models
         public bool IsTileAssigned(Position position)
         {
             return Facility[position.Row, position.Column] != 0;
+        }
+
+        public event EventHandler<TileEventArgs> TilePlaced;
+        public void OnTilePlaced(Position position, int department)
+        {
+            TilePlaced?.Invoke(this, new TileEventArgs(position, department));
         }
     }
 }
