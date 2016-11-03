@@ -258,7 +258,7 @@ namespace FacilityLayout.Core.Tests
         [Test]
         public void Release_The_Termites_Places_Termites()
         {
-            _facilityLayoutForm.ReleaseTheTermites(100, facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns);
+            _facilityLayoutForm.ReleaseTheTermites(100);
 
             var numTermitesAtPositions = new Dictionary<Position, int>();
 
@@ -278,7 +278,7 @@ namespace FacilityLayout.Core.Tests
         [Test]
         public void Release_The_Termites_Sets_Termite_Direction()
         {
-            _facilityLayoutForm.ReleaseTheTermites(100, facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns);
+            _facilityLayoutForm.ReleaseTheTermites(100);
 
             foreach(var termite in _facilityLayoutForm.myTermites)
             {
@@ -289,7 +289,7 @@ namespace FacilityLayout.Core.Tests
         [Test]
         public void Release_The_Termites_Does_Not_Allow_Termite_Placement_On_Fixed_Departments()
         {
-            _facilityLayoutForm.ReleaseTheTermites(100, facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns);
+            _facilityLayoutForm.ReleaseTheTermites(100);
 
             var fixedDepartmentIds = facilityStats.Departments.Where(d => d.IsLocationFixed).Select(d => d.Id);
 
@@ -312,7 +312,7 @@ namespace FacilityLayout.Core.Tests
                 }
             }
 
-            _facilityLayoutForm.ReleaseTheTermites(100, facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns);
+            _facilityLayoutForm.ReleaseTheTermites(100);
 
             var tilesAlreadyTaken = new Dictionary<Position, bool>();
 

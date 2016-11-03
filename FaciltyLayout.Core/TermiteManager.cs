@@ -12,8 +12,6 @@ namespace FaciltyLayout.Core
         private Random rand = new Random();
         private readonly FacilityLayoutModel facilityLayout;
 
-        public bool[,] OwnedTiles { get; private set; }
-
         public event EventHandler<TileEventArgs> TermiteRemovedTile;
 
         public TermiteManager(FacilityLayoutModel facilityLayout)
@@ -27,8 +25,6 @@ namespace FaciltyLayout.Core
         public List<Termites> ReleaseTheTermites(int numTermites, int typeRatio)
         {
             var termites = new List<Termites>();
-
-            OwnedTiles = new bool[facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns];
 
             for(int i = 0; i < numTermites; i++)
             {
@@ -92,19 +88,12 @@ namespace FaciltyLayout.Core
             var department = facilityLayout.GetTile(termite.Position);
 
             if(department != 0 
-                && OwnedTiles[termite.RowPos,termite.ColumnPos] == false)
+                && facilityLayout.IsTileLocked(termite.Position) == false)
             {
                 termite.HasTile = true;
-                OwnedTiles[termite.RowPos, termite.ColumnPos] = true;
                 termite.TileDept = department;
                 facilityLayout.SetTileEmpty(termite.Position); //TODO: This is not an appropriate place for this state change. move it into the termite model
-                OnTermiteRemovedTile(termite);
             }
-        }
-
-        private void OnTermiteRemovedTile(Termites termite)
-        {
-            TermiteRemovedTile?.Invoke(this, new TileEventArgs(termite.Position, termite.TileDept));
         }
     }
 }

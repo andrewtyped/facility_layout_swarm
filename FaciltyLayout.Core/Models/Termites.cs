@@ -120,6 +120,13 @@ namespace FaciltyLayout.Core.Models
 
         }
 
+        public void TakeTile(FacilityLayoutModel facilityLayoutModel)
+        {
+            HasTile = true;
+            TileDept = facilityLayoutModel.GetTile(Position);
+            facilityLayoutModel.SetTileEmpty(Position);
+        }
+
         public T ChangeType<T>() where T:Termites, new()
         {
             var newTermite = new T();
