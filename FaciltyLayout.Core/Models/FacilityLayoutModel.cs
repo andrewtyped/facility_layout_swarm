@@ -78,6 +78,93 @@ namespace FaciltyLayout.Core.Models
             }
         }
 
+        public void ReduceLayoutArea(IList<Termites> termites, int currentRows, int currentColumns, int gravStart, ref int loopCounter)
+        {
+            int i;
+            i = 0;
+
+            for (int x = 0; x < currentRows; x++)
+            {
+                if (IsTileAssigned(x, currentColumns - 1))
+                {
+                    termites[i].TakeTile(this, new Position(x, currentColumns - 1));
+                    i++;
+                }
+            }
+
+            for (int y = 0; y < currentColumns - 1; y++)
+            {
+                if (IsTileAssigned(currentRows - 1, y))
+                {
+                    termites[i].TakeTile(this, new Position(currentRows - 1, y));
+                    i++;
+                }
+            }
+
+            Parallel.ForEach(termites, (termite) =>
+            {
+                termite.Move(this, currentRows - 1, currentColumns - 1);
+            });
+
+            bool TotalContig = false;
+            bool ContigIndicator = false;
+            int n = 0;
+            int Phase1Decay = 10;
+            var contiguityTester = new ContiguityTester();
+
+            for(int refreshcounter = 0;  !TotalContig; refreshcounter++)
+            {
+                if (currentRows - 1 == facilityStats.FacilitySize.Rows && currentColumns - 1 == facilityStats.FacilitySize.Columns)
+                    break;
+
+                if(refreshcounter % 400 == 0) //HACK: Magic number
+                {
+                    UnlockTiles();
+
+                    for(int y = 0; y <= 50; y++) //HACK: Magic number
+                    {
+                        foreach(var termite in termites)
+                        {
+                            termite.MoveTile(this, this.facilityStats, new ContiguityTester(), currentRows - 1, currentColumns - 1);
+                            //TODO: Old code refreshed tile UI here
+                        }
+                    }
+                }
+
+                foreach (var termite in termites)
+                {
+                    termite.MoveTile(this, this.facilityStats, new ContiguityTester(), currentRows - 1, currentColumns - 1);
+                    //TODO: Old code refreshed tile UI here
+                }
+
+                loopCounter++;
+
+                TotalContig = contiguityTester.AllDepartmentsAreContiguous(Facility);
+
+                if(n < termites.Count)
+                {
+                    if(loopCounter % Phase1Decay == 0 && loopCounter >= gravStart - Round((double)gravStart / 4.0, 0)) //HACK: Magic number
+                    {
+                        termites[n] = termites[n].ChangeType<GreedyTermite>();
+                        n++;
+                    }
+                }
+
+                if(loopCounter >= gravStart + Round(gravStart /2.0,0))
+                {
+                    for(int a = 1; a <= facilityStats.DepartmentCount; a++)
+                    {
+                        ContigIndicator = contiguityTester.DepartmentIsContiguous(a, Facility);
+
+                        if (!ContigIndicator)
+                            TotalContig = false;
+                        else
+                            LockDeptTiles(a, currentRows, currentColumns);
+                    }
+                }
+            }
+        }
+
         public void LockDeptTiles(int department, int? rows = null, int? columns = null)
         {
             int irows = rows ?? LayoutArea.Rows;

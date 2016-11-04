@@ -27,7 +27,6 @@ namespace FacilityLayout.Core.Tests
             _facilityLayoutForm = new Form1();
             _facilityLayoutForm.Configure_App(pathToDataFile);
             _facilityLayoutForm.FacilityLayoutModel = _facilityLayoutForm.GenerateFacilitySwarm(_facilityLayoutForm.FacilityStats);
-            _facilityLayoutForm.myFacilityMatrix = _facilityLayoutForm.FacilityLayoutModel.Facility;
             facilityStats = _facilityLayoutForm.FacilityStats;
             facilityLayout = _facilityLayoutForm.FacilityLayoutModel;
 
@@ -173,89 +172,6 @@ namespace FacilityLayout.Core.Tests
         }
 
         [Test]
-        public void Generate_Facility_Swarm_Sets_Size_Of_Algortihm_Space()
-        {
-            Assert.AreEqual(21, _facilityLayoutForm.myFacilityMatrix.GetLength(0));
-            Assert.AreEqual(21, _facilityLayoutForm.myFacilityMatrix.GetLength(1));
-        }
-
-        [Test]
-        public void Generate_Facility_Swarm_Places_All_Required_Department_Tiles()
-        {
-            var actualDepartmentTiles = new Dictionary<int, int>();
-            var facility = _facilityLayoutForm.myFacilityMatrix;
-
-            for(var i = 0; i < facility.GetLength(0); i++)
-            {
-                for(var j = 0; j < facility.GetLength(1); j++)
-                {
-                    var department = facility[i, j];
-                    int currentCount;
-                    actualDepartmentTiles.TryGetValue(department, out currentCount);
-                    actualDepartmentTiles[department] = currentCount + 1;
-                }
-            }
-
-            foreach(var department in _facilityLayoutForm.FacilityStats.Departments)
-            {
-                //0th filler department has no expected area
-                if(department.Id != 0)
-                    Assert.AreEqual(department.Area, actualDepartmentTiles[department.Id]);
-            }
-        }
-
-        [Test]
-        public void Generate_Facility_Swarm_Marks_Assigned_Tiles()
-        {
-            var facility = _facilityLayoutForm.myFacilityMatrix;
-
-            for (var i = 0; i < facility.GetLength(0); i++)
-            {
-                for (var j = 0; j < facility.GetLength(1); j++)
-                {
-                    var department = facility[i, j];
-                    var assigned = department != 0;
-
-                    Assert.AreEqual(assigned, _facilityLayoutForm.FacilityLayoutModel.IsTileAssigned(i, j));
-                }
-            }
-        }
-
-        [Test]
-        public void Generate_Facility_Swarm_Marks_Fixed_Tiles()
-        {
-            var facility = _facilityLayoutForm.myFacilityMatrix;
-            var facilityStats = _facilityLayoutForm.FacilityStats;
-
-            for (var i = 0; i < facility.GetLength(0); i++)
-            {
-                for (var j = 0; j < facility.GetLength(1); j++)
-                {
-                    var departmentId = facility[i, j];
-                    var department = facilityStats.GetDepartment(departmentId);
-
-                    Assert.AreEqual(department.IsLocationFixed, _facilityLayoutForm.FacilityLayoutModel.IsTileFixed(i, j));
-                }
-            }
-        }
-
-        [Test]
-        public void Generate_Facility_Swarm_Respects_Fixed_Department_Locations()
-        {
-            var facility = _facilityLayoutForm.myFacilityMatrix;
-            var fixedDeptLocations = _facilityLayoutForm.FacilityStats.FixedDepartmentLocations;
-            var fixedDepartmentId = _facilityLayoutForm.FacilityStats.Departments.Single(d => d.IsLocationFixed).Id;
-
-            for(int i = fixedDeptLocations[0,0]; i < fixedDeptLocations[2,0]; i++)
-            {
-                for(int j = fixedDeptLocations[1,0]; j < fixedDeptLocations[3,0]; j++)
-                {
-                    Assert.AreEqual(fixedDepartmentId, facility[i - 1, j - 1]);
-                }
-            }
-        }
-
-        [Test]
         public void Release_The_Termites_Places_Termites()
         {
             _facilityLayoutForm.ReleaseTheTermites(100);
@@ -296,45 +212,6 @@ namespace FacilityLayout.Core.Tests
             foreach (var termite in _facilityLayoutForm.myTermites)
             {
                 Assert.IsFalse(fixedDepartmentIds.Contains(facilityLayout.GetTile(termite.Position)));
-            }
-        }
-
-        [Test]
-        public void Release_The_Termites_Allows_Termites_To_Pick_Up_The_Tile_They_Are_Placed_On()
-        {
-            var initialFacility = new int[facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns];
-
-            for (int i = 0; i < facilityLayout.LayoutArea.Rows; i++)
-            {
-                for (int j = 0; j < facilityLayout.LayoutArea.Columns; j++)
-                {
-                    initialFacility[i, j] = facilityLayout.GetTile(i, j);
-                }
-            }
-
-            _facilityLayoutForm.ReleaseTheTermites(100);
-
-            var tilesAlreadyTaken = new Dictionary<Position, bool>();
-
-            foreach(var termite in _facilityLayoutForm.myTermites)
-            {
-                bool tileAlreadyTaken;
-                tilesAlreadyTaken.TryGetValue(termite.Position, out tileAlreadyTaken);
-
-                if (!tileAlreadyTaken)
-                {
-                    var expectedDepartment = initialFacility[termite.RowPos, termite.ColumnPos];
-
-                    Assert.AreEqual(expectedDepartment, termite.TileDept, $"unexpected termite tile at position [{termite.RowPos},{termite.ColumnPos}]");
-                    Assert.AreEqual(expectedDepartment != 0, termite.HasTile, $"unexpected termite HasTile at position [{termite.RowPos},{termite.ColumnPos}]");
-
-                    tilesAlreadyTaken[termite.Position] = true;
-                }
-                else
-                {
-                    Assert.AreEqual(0, termite.TileDept);
-                    Assert.IsFalse(termite.HasTile);
-                }
             }
         }
 

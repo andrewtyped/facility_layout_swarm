@@ -40,7 +40,6 @@ namespace FaciltyLayout.Core
             var termite = SetTermiteType(typeRatio);
             SetTermitePosition(termite);
             SetTermiteDirection(termite);
-            TakeInitialTile(termite);
 
             return termite;
         }
@@ -81,19 +80,6 @@ namespace FaciltyLayout.Core
 
             termite.HorizDirection = horizontalDir;
             termite.VertDirection = verticalDir;
-        }
-
-        private void TakeInitialTile(Termites termite)
-        {
-            var department = facilityLayout.GetTile(termite.Position);
-
-            if(department != 0 
-                && facilityLayout.IsTileLocked(termite.Position) == false)
-            {
-                termite.HasTile = true;
-                termite.TileDept = department;
-                facilityLayout.SetTileEmpty(termite.Position); //TODO: This is not an appropriate place for this state change. move it into the termite model
-            }
         }
     }
 }

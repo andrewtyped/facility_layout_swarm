@@ -15,7 +15,7 @@ namespace FaciltyLayout.Core.Models
         /// <summary>
         /// How far up/down should I go each turn
         /// </summary>
-        public int VertDirection { get; set; } 
+        public int VertDirection { get; set; }
         /// <summary>
         /// How far left/right should I go each turn?
         /// </summary>
@@ -61,7 +61,7 @@ namespace FaciltyLayout.Core.Models
             get
             {
                 //Yes, this is right. Think about it. Rows top to bottom, columns left to right
-                return new Position(RowPos + VertDirection, ColumnPos + HorizDirection); 
+                return new Position(RowPos + VertDirection, ColumnPos + HorizDirection);
             }
         }
 
@@ -120,6 +120,50 @@ namespace FaciltyLayout.Core.Models
 
         }
 
+        public void MoveTile(FacilityLayoutModel facilityLayoutModel, FacilityStats facilityStats, ContiguityTester contiguityTester, int rows, int columns)
+        {
+            Move(facilityLayoutModel, rows, columns);
+
+            //if a didn't have a tile before but is now on a space with an un-owned tile, pick it up
+            if (facilityLayoutModel.IsTileAssigned(Position))
+            {
+                if (facilityLayoutModel.IsTileLocked(Position) == false)
+                {
+                    if (HasTile == false)
+                    {
+                        var SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(Position, facilityLayoutModel.Facility);
+                        var Roulette = rand.Next(0, (int)Math.Pow(SimilarAdjTileCount, 1.75) + 1);
+
+                        if (Roulette == 0)
+                            TakeTile(facilityLayoutModel);
+                    }
+                }
+            }
+
+            var counter = 0;
+
+            while (HasTile)
+            {
+                if (HasTile)
+                    FindDropPoint(facilityLayoutModel, facilityStats, rows, columns);
+                else
+                    break;
+
+                Move(facilityLayoutModel, rows, columns);
+                counter++;
+
+                //if continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
+                if (counter > 40)
+                {
+                    while (facilityLayoutModel.IsTileAssigned(Position))
+                    {
+                        Move(facilityLayoutModel, rows, columns);
+                    }
+                    DropTile(facilityLayoutModel);
+                }
+            }
+        }
+
         public void TakeTile(FacilityLayoutModel facilityLayoutModel)
         {
             HasTile = true;
@@ -127,7 +171,16 @@ namespace FaciltyLayout.Core.Models
             facilityLayoutModel.SetTileEmpty(Position);
         }
 
-        public T ChangeType<T>() where T:Termites, new()
+        public void TakeTile(FacilityLayoutModel facilityLayoutModel, Position newPosition)
+        {
+            HasTile = true;
+            RowPos = newPosition.Row;
+            ColumnPos = newPosition.Column;
+            TileDept = facilityLayoutModel.GetTile(Position);
+            facilityLayoutModel.SetTileEmpty(Position);
+        }
+
+        public T ChangeType<T>() where T : Termites, new()
         {
             var newTermite = new T();
             newTermite.RowPos = RowPos;

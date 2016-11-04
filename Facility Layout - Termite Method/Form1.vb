@@ -6,11 +6,11 @@ Imports FaciltyLayout.Core.Models
 <Assembly: InternalsVisibleTo("FacilityLayout.Core.Tests")>
 Public Class Form1
     Private RandomRow As New Random
-    Friend myFacilityMatrix(,) As Integer 'Matrix displaying the field of tiles and empty spaces
     Friend myTermites As List(Of Termites) 'Agents for moving the tiles
     Private myNumTermites As Integer
     Friend Tile(,) As Windows.Forms.Label
     Private TileRefreshCounter As Integer = 0
+    Private TileChangedCounter As Integer = 0
     Private myTileColors(,) As Integer
     Private myLoopCounter = 0
     Private myLoopPhase As Integer
@@ -53,22 +53,20 @@ Public Class Form1
         Dim VDCP As Integer
 
         Do
-            ReorganizationMethod1(Rows, Columns)
-
-            TileRefresher(Rows, Columns)
+            ReorganizationMethodScholar(Rows, Columns, myNumTermites)
 
             For i = 1 To FacilityStats.DepartmentCount
-                ContigIndicator = contiguityTester.DepartmentIsContiguous(i, myFacilityMatrix)
+                ContigIndicator = contiguityTester.DepartmentIsContiguous(i, FacilityLayoutModel.Facility)
 
                 If ContigIndicator = True Then
                     FacilityLayoutModel.LockDeptTiles(i)
                 End If
             Next
 
-            TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
+            TotalContig = contiguityTester.AllDepartmentsAreContiguous(FacilityLayoutModel.Facility)
         Loop Until TotalContig = True
 
-        VDCP = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats, myFacilityMatrix)
+        VDCP = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats, FacilityLayoutModel.Facility)
         MessageBox.Show(VDCP.ToString("################.00"))
 
     End Sub
@@ -76,6 +74,13 @@ Public Class Form1
     Private Sub Form1_TermiteRemovedTile(sender As Object, e As TileEventArgs) Handles FacilityLayoutModel.TileRemoved
         Tile(e.Position.Row, e.Position.Column).BackColor = Color.Black
         Tile(e.Position.Row, e.Position.Column).Text = ""
+
+        TileChangedCounter = TileChangedCounter + 1
+
+        If TileChangedCounter = 20000 Then
+            TileRefresher(FacilityLayoutModel.LayoutArea.Rows, FacilityLayoutModel.LayoutArea.Columns)
+            TileChangedCounter = 0
+        End If
     End Sub
 
     Private Sub Form1_TilePlaced(sender As Object, e As TileEventArgs) Handles FacilityLayoutModel.TilePlaced
@@ -83,6 +88,13 @@ Public Class Form1
                                                 myTileColors(e.DepartmentId, 1),
                                                 myTileColors(e.DepartmentId, 2))
         Tile(e.Position.Row, e.Position.Column).Text = e.DepartmentId.ToString
+
+        TileChangedCounter = TileChangedCounter + 1
+
+        If TileChangedCounter = 20000 Then
+            TileRefresher(FacilityLayoutModel.LayoutArea.Rows, FacilityLayoutModel.LayoutArea.Columns)
+            TileChangedCounter = 0
+        End If
     End Sub
 
     Friend Sub OpenToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OpenToolStripMenuItem.Click
@@ -109,7 +121,6 @@ Public Class Form1
 
     Private Sub RandomizeTiles(facilityStats As FacilityStats)
         FacilityLayoutModel = GenerateFacilitySwarm(facilityStats)
-        myFacilityMatrix = FacilityLayoutModel.Facility
 
         Dim Rows As Integer = FacilityLayoutModel.LayoutArea.Rows
         Dim Columns As Integer = FacilityLayoutModel.LayoutArea.Columns
@@ -166,9 +177,9 @@ Public Class Form1
                     Me.Controls.Add(Tile(i, j))
                     RowCounter = RowCounter + 25
                 End If
-                Tile(i, j).BackColor = Color.FromArgb(myTileColors(myFacilityMatrix(i, j), 0), myTileColors(myFacilityMatrix(i, j), 1),
-                                                      myTileColors(myFacilityMatrix(i, j), 2))
-                Tile(i, j).Text = myFacilityMatrix(i, j).ToString
+                Tile(i, j).BackColor = Color.FromArgb(myTileColors(FacilityLayoutModel.GetTile(i, j), 0), myTileColors(FacilityLayoutModel.GetTile(i, j), 1),
+                                                      myTileColors(FacilityLayoutModel.GetTile(i, j), 2))
+                Tile(i, j).Text = FacilityLayoutModel.GetTile(i, j).ToString
                 Tile(i, j).Refresh()
             Next
             RowCounter = 10
@@ -176,77 +187,7 @@ Public Class Form1
         Next
         TileRefreshCounter = 1
     End Sub
-    Private Sub RealisticCollection(ByVal rows As Integer, ByVal columns As Integer)
-        Dim i, x, y, upperlimit As Integer
-        i = 0
-        upperlimit = 5
-        For x = 0 To rows - 1
-            If FacilityLayoutModel.IsTileAssigned(x, columns - 1) = True Then
-                myTermites(i).RowPos = x
-                myTermites(i).ColumnPos = columns - 1
-                myTermites(i).TakeTile(FacilityLayoutModel)
-                i = i + 1
-            End If
-        Next
 
-        For y = 0 To columns - 2
-            If FacilityLayoutModel.IsTileAssigned(rows - 1, y) = True Then
-                myTermites(i).RowPos = rows - 1
-                myTermites(i).ColumnPos = y
-                myTermites(i).TakeTile(FacilityLayoutModel)
-                i = i + 1
-            End If
-        Next
-
-        For x = 0 To myNumTermites - 1
-            myTermites(x).Move(FacilityLayoutModel, rows - 1, columns - 1)
-        Next
-        y = 0
-        Dim refreshcounter As Integer = 0
-        Dim TotalContig As Boolean
-        Dim ContigIndicator As Boolean
-        Dim n As Integer = 0
-        Dim Phase1Decay As Integer = 10
-        Do
-            If rows - 1 = FacilityStats.FacilitySize.Rows AndAlso columns - 1 = FacilityStats.FacilitySize.Columns Then
-                Exit Do
-            End If
-            refreshcounter = refreshcounter + 1
-            If Math.IEEERemainder(refreshcounter, 400) = 0 Then
-                FacilityLayoutModel.UnlockTiles(rows, columns)
-                y = 0
-                Do
-                    ReorganizationMethodScholar(rows - 1, columns - 1, myNumTermites - 1)
-                    TileRefresher(rows, columns)
-                    y = y + 1
-                Loop Until y = 50
-
-            End If
-            ReorganizationMethodScholar(rows - 1, columns - 1, myNumTermites - 1)
-            myLoopCounter = myLoopCounter + 1
-            TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
-            If n < myNumTermites Then
-                If Math.IEEERemainder(myLoopCounter, Phase1Decay) = 0 AndAlso myLoopCounter >= myGravStart - Math.Round(myGravStart / 4) Then
-                    myTermites(n) = myTermites(n).ChangeType(Of GreedyTermite)()
-                    n = n + 1
-                End If
-            End If
-            If myLoopCounter >= myGravStart + Math.Round(myGravStart / 2) Then
-                For a = 1 To FacilityStats.DepartmentCount
-                    ContigIndicator = contiguityTester.DepartmentIsContiguous(a, myFacilityMatrix)
-                    If ContigIndicator = False Then
-                        TotalContig = False
-                    End If
-                    If ContigIndicator = True Then
-                        FacilityLayoutModel.LockDeptTiles(a, rows, columns)
-                    End If
-                Next
-            End If
-            If Math.IEEERemainder(refreshcounter, 100) = 0 Then
-                TileRefresher(rows, columns)
-            End If
-        Loop Until TotalContig = True
-    End Sub
     'Sets Initial Position an Direction of Termites
     Friend Sub ReleaseTheTermites(ByVal NumTermites As Integer)
         TermiteManager = New TermiteManager(FacilityLayoutModel)
@@ -259,73 +200,9 @@ Public Class Form1
         myTermites = TermiteManager.ReleaseTheTermites(NumTermites, TypeRatio)
     End Sub
     'Termites begin to move, collect, and drop tiles
-    Private Sub ReorganizationMethod1(ByVal Rows As Integer, ByVal Columns As Integer)
-        Dim i As Integer
-        Dim counter As Integer = 0
-        Dim SimilarAdjTileCount As Integer
-        Dim Roulette As Integer
-        Dim ChaosStart As Integer = 6000
-        Dim ChaosEnd As Integer = 6500
-
-        For i = 0 To myNumTermites - 1
-            Dim termite = myTermites(i)
-            termite.Move(FacilityLayoutModel, Rows, Columns)
-
-            'If a termite didn't have a tile before but is now on a space with an un-owned tile, pick it up
-            If FacilityLayoutModel.IsTileAssigned(termite.Position) = True Then
-                If FacilityLayoutModel.IsTileLocked(termite.Position) = False Then
-                    If termite.HasTile = False Then
-                        SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(termite.Position, myFacilityMatrix)
-                        Roulette = RandomRow.Next(0, SimilarAdjTileCount ^ 2 + 1)
-                        If myLoopCounter > ChaosStart AndAlso myLoopCounter < ChaosEnd Then
-                            Roulette = 0
-                        End If
-                        If Roulette = 0 Then
-                            termite.TakeTile(FacilityLayoutModel)
-                        End If
-                    End If
-                End If
-            End If
-
-            'Check to see if any adjacent tile is equivalent to whatever tile termite has
-            'If check passes, find nearest empty space and set tile down
-            'If check fails, continue moving, loop process until check passes
-            Do
-                If termite.HasTile = True Then
-                    termite.FindDropPoint(FacilityLayoutModel, FacilityStats, Rows, Columns)
-                ElseIf termite.HasTile = False Then
-                    Exit Do
-                End If
-                termite.Move(FacilityLayoutModel, Rows, Columns)
-                counter = counter + 1
-                'If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
-                If counter > 40 Then
-                    If FacilityLayoutModel.IsTileAssigned(termite.Position) = False Then
-                        termite.DropTile(FacilityLayoutModel)
-                    Else
-                        Do
-                            termite.Move(FacilityLayoutModel, Rows, Columns)
-                        Loop Until FacilityLayoutModel.IsTileAssigned(termite.Position) = False
-                        termite.DropTile(FacilityLayoutModel)
-                    End If
-                    Exit Do
-                End If
-            Loop Until termite.HasTile = False
-            counter = 0
-
-            'In my new position, check to see if there are any tiles around that are closely related
-            'If so, drop my tile in the closest empty space
-        Next i
-    End Sub
-
     'This function describes the space immediately around the tile in question. Used for contiguity testing.
     Private Sub ReorganizationMethodScholar(ByVal rows As Integer, ByVal columns As Integer, ByVal numtermites As Integer)
         Dim i As Integer
-        Dim counter As Integer = 0
-        Dim SimilarAdjTileCount As Integer
-        Dim Roulette As Integer
-        Dim CurrentTile As Integer = 0
-        Dim upperlimit As Integer = 5
         Dim HoardingTermite As Integer
         If myLoopPhase = 1 Then
             HoardingTermite = 0
@@ -334,49 +211,8 @@ Public Class Form1
         End If
 
         For i = HoardingTermite To numtermites - 1
-
-            Dim termite = myTermites(i)
-
-            termite.Move(FacilityLayoutModel, rows, columns)
-
-            'If a termite didn't have a tile before but is now on a space with an un-owned tile, pick it up
-            If FacilityLayoutModel.IsTileAssigned(termite.Position) = True Then
-                If FacilityLayoutModel.IsTileLocked(myTermites(i).Position) = False Then
-                    If termite.HasTile = False Then
-                        SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(termite.Position, FacilityLayoutModel.Facility)
-                        Roulette = RandomRow.Next(0, SimilarAdjTileCount ^ 1.75 + 1)
-                        If Roulette = 0 Then
-                            termite.TakeTile(FacilityLayoutModel)
-                        End If
-                    End If
-                End If
-            End If
-
-            Do
-                If termite.HasTile = True Then
-                    termite.FindDropPoint(FacilityLayoutModel, FacilityStats, rows, columns)
-                ElseIf termite.HasTile = False Then
-                    Exit Do
-                End If
-                termite.Move(FacilityLayoutModel, rows, columns)
-                counter = counter + 1
-                'If termite continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
-                If counter > 40 Then
-                    If FacilityLayoutModel.IsTileAssigned(termite.Position) = False Then
-                        termite.DropTile(FacilityLayoutModel)
-                    Else
-                        Do
-                            termite.Move(FacilityLayoutModel, rows, columns)
-                        Loop Until FacilityLayoutModel.IsTileAssigned(termite.Position) = False
-                        termite.DropTile(FacilityLayoutModel)
-                    End If
-                    Exit Do
-                End If
-            Loop Until termite.HasTile = False
-            counter = 0
+            myTermites(i).MoveTile(FacilityLayoutModel, FacilityStats, contiguityTester, rows, columns)
         Next
-        Dim f As Integer
-        f = 2
     End Sub
 
     Private Sub ScholarTermiteMethodToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ScholarTermiteMethodToolStripMenuItem.Click
@@ -439,12 +275,10 @@ Public Class Form1
                 refreshcounter = refreshcounter + 1
 
                 If Math.IEEERemainder(refreshcounter, 600) = 0 Then
-                    'MessageBox.Show("pause")
                     FacilityLayoutModel.UnlockTiles(Rows, Columns)
                     y = 0
                     Do
                         ReorganizationMethodScholar(Rows, Columns, myNumTermites - 1)
-                        'TileRefresher(Rows, Columns)
                         y = y + 1
                     Loop Until y = 50
 
@@ -452,7 +286,7 @@ Public Class Form1
 
                 ReorganizationMethodScholar(Rows, Columns, myNumTermites)
                 myLoopCounter = myLoopCounter + 1
-                TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
+                TotalContig = contiguityTester.AllDepartmentsAreContiguous(FacilityLayoutModel.Facility)
                 If n < myNumTermites Then
                     If Math.IEEERemainder(myLoopCounter, Phase1Decay) = 0 AndAlso myLoopCounter >= myGravStart - Math.Round(myGravStart / 4) Then
                         myTermites(n) = myTermites(n).ChangeType(Of GreedyTermite)()
@@ -461,7 +295,7 @@ Public Class Form1
                 End If
                 If myLoopCounter >= myGravStart + Math.Round(myGravStart / 2) Then
                     For i = 1 To FacilityStats.DepartmentCount
-                        ContigIndicator = contiguityTester.DepartmentIsContiguous(i, myFacilityMatrix)
+                        ContigIndicator = contiguityTester.DepartmentIsContiguous(i, FacilityLayoutModel.Facility)
                         If ContigIndicator = False Then
                             TotalContig = False
                         End If
@@ -470,45 +304,32 @@ Public Class Form1
                         End If
                     Next
                 End If
-                If Math.IEEERemainder(refreshcounter, 100) = 0 Then
-                    TileRefresher(Rows, Columns)
-                End If
             Loop Until TotalContig = True
-            TileRefresher(Rows, Columns)
-            'MessageBox.Show("Pause")
             FacilityLayoutModel.UnlockTiles(Rows, Columns)
-            'MessageBox.Show("pause")
             Dim rowstore, columnstore As Integer
             rowstore = Rows
             columnstore = Columns
             Do
                 FacilityLayoutModel.UnlockTiles(Rows, Columns)
-                RealisticCollection(Rows, Columns)
-                TileRefresher(Rows, Columns)
+                FacilityLayoutModel.ReduceLayoutArea(myTermites, Rows, Columns, myGravStart, myLoopCounter)
                 Rows = Rows - 1
                 Columns = Columns - 1
                 If Rows = FacilityStats.FacilitySize.Rows + 1 Then
                     myLoopPhase = 2
                 End If
-                'MessageBox.Show("pause")
             Loop Until Rows = FacilityStats.FacilitySize.Rows AndAlso Columns = FacilityStats.FacilitySize.Columns
             Rows = rowstore
             Columns = columnstore
-            'MessageBox.Show("Pause")
             myLoopCounter = 0
             n = 0
-            TileRefresher(Rows, Columns)
             myLoopPhase = 2
             FacilityLayoutModel.UnlockTiles(Rows, Columns)
 
             '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!STAGE 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             Do
                 ReorganizationMethodScholar(FacilityStats.FacilitySize.Rows, FacilityStats.FacilitySize.Columns, myNumTermites)
-                If Math.IEEERemainder(myLoopCounter, 100) = 0 Then
-                    TileRefresher(FacilityStats.FacilitySize.Rows, FacilityStats.FacilitySize.Columns)
-                End If
                 myLoopCounter = myLoopCounter + 1
-                TotalContig = contiguityTester.AllDepartmentsAreContiguous(myFacilityMatrix)
+                TotalContig = contiguityTester.AllDepartmentsAreContiguous(FacilityLayoutModel.Facility)
                 If n < myNumTermites Then
                     If Math.IEEERemainder(myLoopCounter, Phase2Decay) = 0 AndAlso myLoopCounter >= myGravStart - Math.Round(3 * myGravStart / 4) Then
                         myTermites(n) = myTermites(n).ChangeType(Of GreedyTermite)()
@@ -520,7 +341,7 @@ Public Class Form1
                     For i = 0 To FacilityStats.FacilitySize.Rows - 1
                         For j = 0 To FacilityStats.FacilitySize.Columns - 1
                             If FacilityLayoutModel.IsTileAssigned(i, j) = False Then
-                                adjTilesContainSameDepartment = contiguityTester.AdjacentTilesContainSameDepartment(myTermites(0).TileDept, i, j, myFacilityMatrix, FacilityStats.DepartmentSizes)
+                                adjTilesContainSameDepartment = contiguityTester.AdjacentTilesContainSameDepartment(myTermites(0).TileDept, i, j, FacilityLayoutModel.Facility, FacilityStats.DepartmentSizes)
 
                                 If adjTilesContainSameDepartment Then
                                     myTermites(0).DropTile(FacilityLayoutModel, i, j)
@@ -543,11 +364,14 @@ Public Class Form1
                     Next
                 Next
             Loop Until TotalContig = True AndAlso adjTilesContainSameDepartment
+
+            TileRefresher(FacilityLayoutModel.LayoutArea.Rows, FacilityLayoutModel.LayoutArea.Columns)
+
             StopTime = Now
             RunTime = StopTime.Subtract(StartTime)
             Dim VDC As Double
             Dim OBJValue As String
-            VDC = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats, myFacilityMatrix)
+            VDC = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats, FacilityLayoutModel.Facility)
             OBJValue = VDC.ToString & vbCrLf & RunTime.ToString
             MessageBox.Show(OBJValue)
             Solutions(x) = VDC
