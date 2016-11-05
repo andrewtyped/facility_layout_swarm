@@ -84,7 +84,7 @@ namespace FacilityLayout.Core.Tests
             termite.HorizDirection = 1;
             termite.VertDirection = 1;
 
-            termite.Move(facilityLayout, 19, 19);
+            termite.Move(facilityLayout);
             Assert.AreNotEqual(21, termite.RowPos);
             Assert.AreNotEqual(21, termite.ColumnPos);
         }

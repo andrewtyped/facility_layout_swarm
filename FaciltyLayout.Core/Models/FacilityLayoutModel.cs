@@ -11,7 +11,7 @@ namespace FaciltyLayout.Core.Models
     {
         private readonly Random random = new Random();
         private readonly FacilityStats facilityStats;
-        public GridSize LayoutArea { get; }
+        public GridSize LayoutArea { get; private set; }
 
         public int[,] Facility { get; private set; }
 
@@ -25,12 +25,15 @@ namespace FaciltyLayout.Core.Models
 
         private GridSize SetLayoutArea()
         {
+            /*
             var facilitySize = facilityStats.FacilitySize;
 
             var layoutRows = (int)Round(Sqrt(2 * Pow(facilitySize.Rows, 2)));
             var layoutColumns = (int)Round(Sqrt(2 * Pow(facilitySize.Columns, 2)));
 
             return new GridSize(layoutRows, layoutColumns);
+            */
+            return new GridSize(facilityStats.FacilitySize.Rows + 1, facilityStats.FacilitySize.Columns + 1);
         }
 
         public void InitializeDepartmentTiles()
@@ -78,10 +81,15 @@ namespace FaciltyLayout.Core.Models
             }
         }
 
-        public void ReduceLayoutArea(IList<Termites> termites, int currentRows, int currentColumns, int gravStart, ref int loopCounter)
+        public void ReduceLayoutArea(IList<Termites> termites, int gravStart, ref int loopCounter)
         {
-            int i;
-            i = 0;
+            UnlockTiles();
+
+            var currentRows = LayoutArea.Rows;
+            var currentColumns = LayoutArea.Columns;
+            LayoutArea = new GridSize(LayoutArea.Rows - 1, LayoutArea.Columns - 1);
+
+            var i = 0;
 
             for (int x = 0; x < currentRows; x++)
             {
@@ -103,7 +111,7 @@ namespace FaciltyLayout.Core.Models
 
             Parallel.ForEach(termites, (termite) =>
             {
-                termite.Move(this, currentRows - 1, currentColumns - 1);
+                termite.Move(this);
             });
 
             bool TotalContig = false;
@@ -125,7 +133,7 @@ namespace FaciltyLayout.Core.Models
                     {
                         foreach(var termite in termites)
                         {
-                            termite.MoveTile(this, this.facilityStats, new ContiguityTester(), currentRows - 1, currentColumns - 1);
+                            termite.MoveTile(this, this.facilityStats, new ContiguityTester());
                             //TODO: Old code refreshed tile UI here
                         }
                     }
@@ -133,7 +141,7 @@ namespace FaciltyLayout.Core.Models
 
                 foreach (var termite in termites)
                 {
-                    termite.MoveTile(this, this.facilityStats, new ContiguityTester(), currentRows - 1, currentColumns - 1);
+                    termite.MoveTile(this, this.facilityStats, new ContiguityTester());
                     //TODO: Old code refreshed tile UI here
                 }
 
@@ -159,20 +167,19 @@ namespace FaciltyLayout.Core.Models
                         if (!ContigIndicator)
                             TotalContig = false;
                         else
-                            LockDeptTiles(a, currentRows, currentColumns);
+                            LockDeptTiles(a);
                     }
                 }
             }
+
+            
         }
 
-        public void LockDeptTiles(int department, int? rows = null, int? columns = null)
+        public void LockDeptTiles(int department)
         {
-            int irows = rows ?? LayoutArea.Rows;
-            int icolumns = columns ?? LayoutArea.Columns;
-
-            Parallel.For(0, irows, (i) =>
+            Parallel.For(0, LayoutArea.Rows, (i) =>
              {
-                 for (int j = 0; j < icolumns; j++)
+                 for (int j = 0; j < LayoutArea.Columns; j++)
                  {
                      if (Facility[i, j] == department)
                          LockedTiles[i, j] = true;
@@ -180,7 +187,7 @@ namespace FaciltyLayout.Core.Models
              });
         }
 
-        public void UnlockTiles(int? rows = null, int? columns = null)
+        public void UnlockTiles()
         {
             LockedTiles = new bool[LayoutArea.Rows, LayoutArea.Columns];
         }
@@ -227,10 +234,10 @@ namespace FaciltyLayout.Core.Models
         /// Returns true if the position is on the board and not over a fixed tile,
         /// false otherwise.
         /// </summary>
-        public bool IsPositionValid(Position position, int? maxRow = null, int? maxColumn = null)
+        public bool IsPositionValid(Position position)
         {
-            return position.Row >= 0 && position.Row < (maxRow ?? LayoutArea.Rows) &&
-                position.Column >= 0 && position.Column < (maxColumn ?? LayoutArea.Columns) &&
+            return position.Row >= 0 && position.Row < LayoutArea.Rows &&
+                position.Column >= 0 && position.Column < LayoutArea.Columns &&
                 IsTileFixed(position) == false;
         }
 
@@ -265,12 +272,12 @@ namespace FaciltyLayout.Core.Models
 
         public event EventHandler<TileEventArgs> TilePlaced;
         public event EventHandler<TileEventArgs> TileRemoved;
-        public void OnTilePlaced(Position position, int department)
+        private void OnTilePlaced(Position position, int department)
         {
             TilePlaced?.Invoke(this, new TileEventArgs(position, department));
         }
 
-        public void OnTileRemoved(Position position)
+        private void OnTileRemoved(Position position)
         {
             TileRemoved?.Invoke(this, new TileEventArgs(position, 0));
         }

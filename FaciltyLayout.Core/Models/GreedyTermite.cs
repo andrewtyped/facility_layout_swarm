@@ -8,7 +8,7 @@ namespace FaciltyLayout.Core.Models
 {
     public class GreedyTermite : Termites
     {
-        public override void FindDropPoint(FacilityLayoutModel facilityLayoutModel, FacilityStats facilityStats, int rows, int columns)
+        public override void FindDropPoint(FacilityLayoutModel facilityLayout, FacilityStats facilityStats)
         {
             bool ClosestFound = false;
             //Check adjacent spaces for equivalent tiles
@@ -18,27 +18,27 @@ namespace FaciltyLayout.Core.Models
                 var adjacentTileSearchColumn = ColumnPos - tileSearchOrder.Column;
                 var adjacentTileSearchRow = RowPos - tileSearchOrder.Row;
                 //must not look outside of facility field boundaries
-                if (0 <= adjacentTileSearchColumn && adjacentTileSearchColumn < columns)
+                if (0 <= adjacentTileSearchColumn && adjacentTileSearchColumn < facilityLayout.LayoutArea.Columns)
                 {
-                    if (0 <= adjacentTileSearchRow && adjacentTileSearchRow < rows)
+                    if (0 <= adjacentTileSearchRow && adjacentTileSearchRow < facilityLayout.LayoutArea.Rows)
                     {
-                        if (facilityLayoutModel.Facility[adjacentTileSearchRow, adjacentTileSearchColumn] == TileDept)
+                        if (facilityLayout.Facility[adjacentTileSearchRow, adjacentTileSearchColumn] == TileDept)
                         {
                             foreach (var emptyTileSearchOrder in EmptyTileSearchOrder)
                             {
                                 var emptyTileSearchColumn = adjacentTileSearchColumn - emptyTileSearchOrder.Column;
                                 var emptyTileSearchRow = adjacentTileSearchRow - emptyTileSearchOrder.Row;
 
-                                if (0 <= emptyTileSearchColumn && emptyTileSearchColumn < columns)
+                                if (0 <= emptyTileSearchColumn && emptyTileSearchColumn < facilityLayout.LayoutArea.Columns)
                                 {
-                                    if (0 <= emptyTileSearchRow && emptyTileSearchRow < rows)
+                                    if (0 <= emptyTileSearchRow && emptyTileSearchRow < facilityLayout.LayoutArea.Rows)
                                     {
-                                        if (facilityLayoutModel.IsTileAssigned(emptyTileSearchRow, emptyTileSearchColumn) == false)
+                                        if (facilityLayout.IsTileAssigned(emptyTileSearchRow, emptyTileSearchColumn) == false)
                                         {
                                             ClosestFound = true;
                                             ColumnPos = emptyTileSearchColumn;
                                             RowPos = emptyTileSearchRow;
-                                            facilityLayoutModel.SetTile(emptyTileSearchRow, emptyTileSearchColumn, TileDept);
+                                            facilityLayout.SetTile(emptyTileSearchRow, emptyTileSearchColumn, TileDept);
                                             HasTile = false;
                                             TileDept = 0;
                                             break;

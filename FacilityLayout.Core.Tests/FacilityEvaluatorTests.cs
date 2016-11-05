@@ -68,14 +68,14 @@ namespace FacilityLayout.Core.Tests
                 _volumeMatrix,
                 _costMatrix);
 
-            double[,] centroids = _facilityEvaluator.CentroidCalculator(facilityStats, _facilityMatrix);
+            var centroids = _facilityEvaluator.CentroidCalculator(facilityStats, _facilityMatrix);
 
-            Assert.AreEqual(0, centroids[1, 0]);
-            Assert.AreEqual(2, centroids[1, 1]);
-            Assert.AreEqual(1, centroids[2, 0]);
-            Assert.AreEqual(2, centroids[2, 1]);
-            Assert.AreEqual(2, centroids[3, 0]);
-            Assert.AreEqual(2, centroids[3, 1]);
+            Assert.AreEqual(0, centroids[1].Row);
+            Assert.AreEqual(2, centroids[1].Column);
+            Assert.AreEqual(1, centroids[2].Row);
+            Assert.AreEqual(2, centroids[2].Column);
+            Assert.AreEqual(2, centroids[3].Row);
+            Assert.AreEqual(2, centroids[3].Column);
         }
 
         [Test]

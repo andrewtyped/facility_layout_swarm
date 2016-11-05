@@ -16,9 +16,9 @@ namespace FaciltyLayout.Core
         ///     2-d array showing the center-x coord for each dept in the [,0] position, and the center-y
         ///     coord for each dept in the [,1] position. The [n,]th row denotes the nth department.
         /// </returns>
-        internal double[,] CentroidCalculator(FacilityStats facilityStats, int[,] facilityMatrix)
+        internal IReadOnlyDictionary<int,Position> CentroidCalculator(FacilityStats facilityStats, int[,] facilityMatrix)
         {
-            double[,] centroids = new double[facilityStats.DepartmentCount + 1, 2];
+            var centroids = new Dictionary<int, Position>();
 
             for (var k = 1; k <= facilityStats.DepartmentCount; k++)
             {
@@ -38,8 +38,8 @@ namespace FaciltyLayout.Core
                 }
 
                 //TODO: This is always truncating the expression to an int. Is that right?
-                centroids[k, 0] = rowSums / facilityStats.DepartmentSizes[k];
-                centroids[k, 1] = columnSums / facilityStats.DepartmentSizes[k];
+                centroids[k] = new Position(rowSums / facilityStats.DepartmentSizes[k],
+                                            columnSums / facilityStats.DepartmentSizes[k]);
             }
 
             return centroids;
@@ -54,7 +54,7 @@ namespace FaciltyLayout.Core
             {
                 for(var j = 1; j <= facilityStats.DepartmentCount; j++)
                 {
-                    product += (Math.Abs(centroids[j, 0] - centroids[i, 0]) + Math.Abs(centroids[j, 1] - centroids[i, 1]))
+                    product += (Math.Abs(centroids[j].Row - centroids[i].Row) + Math.Abs(centroids[j].Column - centroids[i].Column))
                         * facilityStats.VolumeMatrix[i, j]
                         * facilityStats.CostMatrix[i, j];
                 }

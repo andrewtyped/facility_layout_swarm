@@ -77,28 +77,28 @@ namespace FaciltyLayout.Core.Models
             EmptyTileSearchOrder = RelativeTiles.ShufflePositions().Take(rn).ToList();
         }
 
-        public void Move(FacilityLayoutModel facility, int? maxRow = null, int? maxColumn = null)
+        public void Move(FacilityLayoutModel facility)
         {
-            if (!IsDirectionValid(facility, maxRow, maxColumn))
-                ChooseNewDirection(facility, maxRow, maxColumn);
+            if (!IsDirectionValid(facility))
+                ChooseNewDirection(facility);
 
             RowPos = NextPosition.Row;
             ColumnPos = NextPosition.Column;
         }
 
-        public void ChooseNewDirection(FacilityLayoutModel facility, int? maxRow = null, int? maxColumn = null)
+        public void ChooseNewDirection(FacilityLayoutModel facility)
         {
             do
             {
                 HorizDirection = rand.Next(0, 5) - 2;
                 VertDirection = rand.Next(0, 5) - 2;
-            } while (!IsDirectionValid(facility, maxRow, maxColumn));
+            } while (!IsDirectionValid(facility));
         }
 
-        private bool IsDirectionValid(FacilityLayoutModel facility, int? maxRow = null, int? maxColumn = null)
+        private bool IsDirectionValid(FacilityLayoutModel facility)
         {
             return !(HorizDirection == 0 && VertDirection == 0) &&
-                facility.IsPositionValid(NextPosition, maxRow, maxColumn);
+                facility.IsPositionValid(NextPosition);
         }
 
         public void DropTile(FacilityLayoutModel facilityLayoutModel)
@@ -113,16 +113,18 @@ namespace FaciltyLayout.Core.Models
             facilityLayoutModel.SetTile(row, column, TileDept);
             HasTile = false;
             TileDept = 0;
+            RowPos = row;
+            ColumnPos = column;
         }
 
-        public virtual void FindDropPoint(FacilityLayoutModel facilityLayoutModel, FacilityStats facilityStats, int rows, int columns)
+        public virtual void FindDropPoint(FacilityLayoutModel facilityLayoutModel, FacilityStats facilityStats)
         {
 
         }
 
-        public void MoveTile(FacilityLayoutModel facilityLayoutModel, FacilityStats facilityStats, ContiguityTester contiguityTester, int rows, int columns)
+        public void MoveTile(FacilityLayoutModel facilityLayoutModel, FacilityStats facilityStats, ContiguityTester contiguityTester)
         {
-            Move(facilityLayoutModel, rows, columns);
+            Move(facilityLayoutModel);
 
             //if a didn't have a tile before but is now on a space with an un-owned tile, pick it up
             if (facilityLayoutModel.IsTileAssigned(Position))
@@ -145,11 +147,11 @@ namespace FaciltyLayout.Core.Models
             while (HasTile)
             {
                 if (HasTile)
-                    FindDropPoint(facilityLayoutModel, facilityStats, rows, columns);
+                    FindDropPoint(facilityLayoutModel, facilityStats);
                 else
                     break;
 
-                Move(facilityLayoutModel, rows, columns);
+                Move(facilityLayoutModel);
                 counter++;
 
                 //if continuously fails to find an adjacent equivalent tile, set tile down in nearest empty space
@@ -157,7 +159,7 @@ namespace FaciltyLayout.Core.Models
                 {
                     while (facilityLayoutModel.IsTileAssigned(Position))
                     {
-                        Move(facilityLayoutModel, rows, columns);
+                        Move(facilityLayoutModel);
                     }
                     DropTile(facilityLayoutModel);
                 }

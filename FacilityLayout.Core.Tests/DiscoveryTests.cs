@@ -26,9 +26,9 @@ namespace FacilityLayout.Core.Tests
             pathToDataFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "SampleConfigFiles", "Kraft15_data.txt");
             _facilityLayoutForm = new Form1();
             _facilityLayoutForm.Configure_App(pathToDataFile);
-            _facilityLayoutForm.FacilityLayoutModel = _facilityLayoutForm.GenerateFacilitySwarm(_facilityLayoutForm.FacilityStats);
             facilityStats = _facilityLayoutForm.FacilityStats;
-            facilityLayout = _facilityLayoutForm.FacilityLayoutModel;
+            facilityLayout = new FacilityLayoutModel(facilityStats);
+            facilityLayout.InitializeDepartmentTiles();
 
             _facilityLayoutForm.Tile = new Label[facilityLayout.LayoutArea.Rows, facilityLayout.LayoutArea.Columns];
 
@@ -168,50 +168,6 @@ namespace FacilityLayout.Core.Tests
                 CollectionAssert.AreEqual(expFlow.Flows, actualFlow.Flows, $"Flows mismatched at index [{i}]");
                 Assert.AreEqual(expFlow.FlowSum, actualFlow.FlowSum, $"Flowsum mismatched at index[{i}]");
                 Assert.AreEqual(expFlow.NumRelations, actualFlow.NumRelations, $"NumRelations mismatched at index [{i}]");
-            }
-        }
-
-        [Test]
-        public void Release_The_Termites_Places_Termites()
-        {
-            _facilityLayoutForm.ReleaseTheTermites(100);
-
-            var numTermitesAtPositions = new Dictionary<Position, int>();
-
-            foreach(var termite in _facilityLayoutForm.myTermites)
-            {
-                int currentCount;
-                numTermitesAtPositions.TryGetValue(termite.Position, out currentCount);
-                numTermitesAtPositions[termite.Position] = currentCount + 1;
-            }
-
-            var avgNumTermitesPerPosition = numTermitesAtPositions.Values.Average();
-
-            Assert.That(avgNumTermitesPerPosition < 1.25); //A magic number, but since we're only using 100 termites
-                                                           //and the grid is 15 x 15, doubling on a tile should be rare.
-        }
-
-        [Test]
-        public void Release_The_Termites_Sets_Termite_Direction()
-        {
-            _facilityLayoutForm.ReleaseTheTermites(100);
-
-            foreach(var termite in _facilityLayoutForm.myTermites)
-            {
-                Assert.That(termite.RowPos != 0 || termite.ColumnPos != 0);
-            }
-        }
-
-        [Test]
-        public void Release_The_Termites_Does_Not_Allow_Termite_Placement_On_Fixed_Departments()
-        {
-            _facilityLayoutForm.ReleaseTheTermites(100);
-
-            var fixedDepartmentIds = facilityStats.Departments.Where(d => d.IsLocationFixed).Select(d => d.Id);
-
-            foreach (var termite in _facilityLayoutForm.myTermites)
-            {
-                Assert.IsFalse(fixedDepartmentIds.Contains(facilityLayout.GetTile(termite.Position)));
             }
         }
 
