@@ -22,7 +22,7 @@ namespace FaciltyLayout.Core.Models
                 {
                     if (0 <= adjacentTileSearchRow && adjacentTileSearchRow < facilityLayout.LayoutArea.Rows)
                     {
-                        if (facilityLayout.Facility[adjacentTileSearchRow, adjacentTileSearchColumn] == TileDept)
+                        if (facilityLayout.GetTile(adjacentTileSearchRow, adjacentTileSearchColumn) == TileDept)
                         {
                             foreach (var emptyTileSearchOrder in EmptyTileSearchOrder)
                             {

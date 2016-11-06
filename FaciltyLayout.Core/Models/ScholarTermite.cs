@@ -25,8 +25,8 @@ namespace FaciltyLayout.Core.Models
                     {
                         if (facilityLayout.IsTileAssigned(adjacentTileSearchRow, adjacentTileSearchColumn))
                         {
-                            if (rn <= 100 * (facilityStats.Flows[TileDept].Flows[facilityLayout.Facility[adjacentTileSearchRow,
-                            adjacentTileSearchColumn]]) / (facilityStats.Flows[TileDept].FlowSum))
+                            if (rn <= 100 * (facilityStats.Flows[TileDept].Flows[facilityLayout.GetTile(adjacentTileSearchRow,
+                            adjacentTileSearchColumn)]) / (facilityStats.Flows[TileDept].FlowSum))
                             {
                                 foreach (var emptyTileSearchOrder in EmptyTileSearchOrder)
                                 {

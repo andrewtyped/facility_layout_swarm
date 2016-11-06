@@ -33,13 +33,12 @@ namespace FacilityLayout.Core.Tests
         public void InitializeDepartmentTiles_Places_All_Required_Department_Tiles()
         {
             var actualDepartmentTiles = new Dictionary<int, int>();
-            var facility = facilityLayout.Facility;
 
-            for (var i = 0; i < facility.GetLength(0); i++)
+            for (var i = 0; i < facilityLayout.LayoutArea.Rows; i++)
             {
-                for (var j = 0; j < facility.GetLength(1); j++)
+                for (var j = 0; j < facilityLayout.LayoutArea.Columns; j++)
                 {
-                    var department = facility[i, j];
+                    var department = facilityLayout.GetTile(i,j);
                     int currentCount;
                     actualDepartmentTiles.TryGetValue(department, out currentCount);
                     actualDepartmentTiles[department] = currentCount + 1;
@@ -57,13 +56,11 @@ namespace FacilityLayout.Core.Tests
         [Test]
         public void Generate_Facility_Swarm_Marks_Assigned_Tiles()
         {
-            var facility = facilityLayout.Facility;
-
-            for (var i = 0; i < facility.GetLength(0); i++)
+            for (var i = 0; i < facilityLayout.LayoutArea.Rows; i++)
             {
-                for (var j = 0; j < facility.GetLength(1); j++)
+                for (var j = 0; j < facilityLayout.LayoutArea.Columns; j++)
                 {
-                    var department = facility[i, j];
+                    var department = facilityLayout.GetTile(i, j);
                     var assigned = department != 0;
 
                     Assert.AreEqual(assigned, facilityLayout.IsTileAssigned(i, j));
@@ -75,13 +72,11 @@ namespace FacilityLayout.Core.Tests
         [Test]
         public void Generate_Facility_Swarm_Marks_Fixed_Tiles()
         {
-            var facility = facilityLayout.Facility;
-
-            for (var i = 0; i < facility.GetLength(0); i++)
+            for (var i = 0; i < facilityLayout.LayoutArea.Rows; i++)
             {
-                for (var j = 0; j < facility.GetLength(1); j++)
+                for (var j = 0; j < facilityLayout.LayoutArea.Columns; j++)
                 {
-                    var departmentId = facility[i, j];
+                    var departmentId = facilityLayout.GetTile(i, j);
                     var department = facilityStats.GetDepartment(departmentId);
 
                     Assert.AreEqual(department.IsLocationFixed, facilityLayout.IsTileFixed(i, j));
@@ -99,7 +94,7 @@ namespace FacilityLayout.Core.Tests
                 {
                     for (int j = (int)department.TopLeft?.Column; j < department.BottomRight?.Column; j++)
                     {
-                        Assert.AreEqual(department.Id, facilityLayout.Facility[i - 1, j - 1]);
+                        Assert.AreEqual(department.Id, facilityLayout.GetTile(i - 1, j - 1));
                     }
                 }
             }
