@@ -16,7 +16,7 @@ namespace FaciltyLayout.Core
         ///     2-d array showing the center-x coord for each dept in the [,0] position, and the center-y
         ///     coord for each dept in the [,1] position. The [n,]th row denotes the nth department.
         /// </returns>
-        internal IReadOnlyDictionary<int,Position> CentroidCalculator(FacilityStats facilityStats, int[,] facilityMatrix)
+        internal IReadOnlyDictionary<int,Position> CentroidCalculator(FacilityStats facilityStats, FacilityLayoutModel facility)
         {
             var centroids = new Dictionary<int, Position>();
 
@@ -25,11 +25,11 @@ namespace FaciltyLayout.Core
                 var rowSums = 0;
                 var columnSums = 0;
 
-                for(var i = 0; i < facilityMatrix.GetLength(0); i++)
+                for(var i = 0; i < facility.LayoutArea.Rows; i++)
                 {
-                    for(var j = 0; j < facilityMatrix.GetLength(1); j++)
+                    for(var j = 0; j < facility.LayoutArea.Columns; j++)
                     {
-                        if(facilityMatrix[i,j] == k)
+                        if(facility.GetTile(i,j) == k)
                         {
                             rowSums += i;
                             columnSums += j;
@@ -45,10 +45,10 @@ namespace FaciltyLayout.Core
             return centroids;
         }
 
-        public double VolumeDistanceCostProduct(FacilityStats facilityStats, int[,] facilityMatrix)
+        public double VolumeDistanceCostProduct(FacilityStats facilityStats, FacilityLayoutModel facility)
         {
             double product = 0.0;
-            var centroids = CentroidCalculator(facilityStats, facilityMatrix);
+            var centroids = CentroidCalculator(facilityStats, facility);
 
             for(var i = 1; i <= facilityStats.DepartmentCount; i++)
             {

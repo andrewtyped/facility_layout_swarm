@@ -68,7 +68,7 @@ namespace FacilityLayout.Core.Tests
                 _volumeMatrix,
                 _costMatrix);
 
-            var centroids = _facilityEvaluator.CentroidCalculator(facilityStats, _facilityMatrix);
+            var centroids = _facilityEvaluator.CentroidCalculator(facilityStats, new FacilityLayoutModel(_facilityMatrix));
 
             Assert.AreEqual(0, centroids[1].Row);
             Assert.AreEqual(2, centroids[1].Column);
@@ -94,7 +94,7 @@ namespace FacilityLayout.Core.Tests
                 _volumeMatrix,
                 _costMatrix);
 
-            double product = _facilityEvaluator.VolumeDistanceCostProduct(facilityStats, _facilityMatrix);
+            double product = _facilityEvaluator.VolumeDistanceCostProduct(facilityStats, new FacilityLayoutModel(_facilityMatrix));
 
             //VDC formula
             //sum(

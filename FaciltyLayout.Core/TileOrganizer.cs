@@ -73,8 +73,8 @@ namespace FaciltyLayout.Core
 
                 OnOrganizerMileStoneReached(facilityLayoutModel.LayoutArea);                    
 
-                var volumeDistanceCostProduct = facilityEvaluator.VolumeDistanceCostProduct(facilityStats, facilityLayoutModel.Facility);
-                var centroids = facilityEvaluator.CentroidCalculator(facilityStats, facilityLayoutModel.Facility);
+                var volumeDistanceCostProduct = facilityEvaluator.VolumeDistanceCostProduct(facilityStats, facilityLayoutModel);
+                var centroids = facilityEvaluator.CentroidCalculator(facilityStats, facilityLayoutModel);
                 var runTime = DateTime.Now.Subtract(startTime);
                 var solution = new FacilityLayoutSolution(volumeDistanceCostProduct, runTime, centroids, facilityLayoutModel.Facility);
 
@@ -223,8 +223,8 @@ namespace FaciltyLayout.Core
 
                 var stopTime = DateTime.Now;
                 var runTime = stopTime.Subtract(startTime);
-                var volumeDistanceCostProduct = facilityEvaluator.VolumeDistanceCostProduct(facilityStats, facilityLayoutModel.Facility);
-                var centroids = facilityEvaluator.CentroidCalculator(facilityStats, facilityLayoutModel.Facility);
+                var volumeDistanceCostProduct = facilityEvaluator.VolumeDistanceCostProduct(facilityStats, facilityLayoutModel);
+                var centroids = facilityEvaluator.CentroidCalculator(facilityStats, facilityLayoutModel);
                 var solution = new FacilityLayoutSolution(volumeDistanceCostProduct, runTime, centroids, facilityLayoutModel.Facility);
 
                 facilityLayoutModel.TilePlaced -= FacilityLayoutModel_OnTilePlaced;
