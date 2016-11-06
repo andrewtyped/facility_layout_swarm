@@ -17,6 +17,12 @@ namespace FaciltyLayout.Core.Models
 
         public bool[,] LockedTiles { get; private set; }
 
+        //For testing
+        internal FacilityLayoutModel(int[,] facility)
+        {
+            Facility = facility;
+            LayoutArea = new GridSize(facility.GetLength(0), facility.GetLength(1));
+        }
         public FacilityLayoutModel(FacilityStats facilityStats)
         {
             this.facilityStats = facilityStats;
@@ -147,7 +153,7 @@ namespace FaciltyLayout.Core.Models
 
                 loopCounter++;
 
-                TotalContig = contiguityTester.AllDepartmentsAreContiguous(Facility);
+                TotalContig = contiguityTester.AllDepartmentsAreContiguous(this);
 
                 if(n < termites.Count)
                 {
@@ -162,7 +168,7 @@ namespace FaciltyLayout.Core.Models
                 {
                     for(int a = 1; a <= facilityStats.DepartmentCount; a++)
                     {
-                        ContigIndicator = contiguityTester.DepartmentIsContiguous(a, Facility);
+                        ContigIndicator = contiguityTester.DepartmentIsContiguous(a, this);
 
                         if (!ContigIndicator)
                             TotalContig = false;
@@ -200,6 +206,36 @@ namespace FaciltyLayout.Core.Models
         public int GetTile(Position position)
         {
             return Facility[position.Row, position.Column];
+        }
+
+        public bool IsTileMarked(int row, int column)
+        {
+            return Facility[row, column] < 0;
+        }
+        
+        public bool IsTileMarked(int row, int column, int department)
+        {
+            return Facility[row, column] == -1 * department;
+        }
+
+        /// <summary>
+        /// Negates the id stored in the facility at the specified row and column. Useful for checking contiguity
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="column"></param>
+        public void MarkTile(int row, int column)
+        {
+            Facility[row, column] = -1 * Facility[row, column];
+        }
+
+        /// <summary>
+        /// Returns the id stored in the facility at the specified row and column to a non-negative integer
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="column"></param>
+        public void UnmarkTile(int row, int column)
+        {
+            Facility[row, column] = Abs(Facility[row, column]);
         }
 
         public void SetTile(int row, int column, int department)

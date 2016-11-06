@@ -133,7 +133,7 @@ namespace FaciltyLayout.Core.Models
                 {
                     if (HasTile == false)
                     {
-                        var SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(Position, facilityLayoutModel.Facility);
+                        var SimilarAdjTileCount = contiguityTester.CountAdjacentTilesOfSameDepartment(Position, facilityLayoutModel);
                         var Roulette = rand.Next(0, (int)Math.Pow(SimilarAdjTileCount, 1.75) + 1);
 
                         if (Roulette == 0)

@@ -39,14 +39,14 @@ namespace FacilityLayout.Core.Tests
         public void Termite_Wont_Move_Out_Of_Facility_Bounds()
         {
             var termite = new Termites();
-            termite.ColumnPos = 20;
-            termite.RowPos = 20;
+            termite.ColumnPos = facilityLayout.LayoutArea.Columns - 1;
+            termite.RowPos = facilityLayout.LayoutArea.Rows - 1;
             termite.HorizDirection = 1;
             termite.VertDirection = 1;
 
             termite.Move(facilityLayout);
-            Assert.AreNotEqual(21, termite.RowPos);
-            Assert.AreNotEqual(21, termite.ColumnPos);
+            Assert.AreNotEqual(facilityLayout.LayoutArea.Rows, termite.RowPos);
+            Assert.AreNotEqual(facilityLayout.LayoutArea.Columns, termite.ColumnPos);
         }
 
         [Test]
@@ -73,20 +73,6 @@ namespace FacilityLayout.Core.Tests
             var currentPosition = termite.Position;
             termite.Move(facilityLayout);
             Assert.AreNotEqual(currentPosition, termite.Position);
-        }
-
-        [Test]
-        public void Termites_Respect_AdHoc_Limits_On_Max_Row_And_Colum_Position()
-        {
-            var termite = new Termites();
-            termite.ColumnPos = 20;
-            termite.RowPos = 20;
-            termite.HorizDirection = 1;
-            termite.VertDirection = 1;
-
-            termite.Move(facilityLayout);
-            Assert.AreNotEqual(21, termite.RowPos);
-            Assert.AreNotEqual(21, termite.ColumnPos);
         }
 
         [Test]

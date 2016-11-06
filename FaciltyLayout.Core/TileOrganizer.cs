@@ -58,14 +58,14 @@ namespace FaciltyLayout.Core
 
                     Parallel.For(1, facilityStats.DepartmentCount + 1, (department) =>
                     {
-                        var departmentIsContiguous = contiguityTester.DepartmentIsContiguous(department, facilityLayoutModel.Facility);
+                        var departmentIsContiguous = contiguityTester.DepartmentIsContiguous(department, facilityLayoutModel);
 
                         //try without lock first. Each iteration of this loop should affect non-overlapping segments of the facility model
                         if (departmentIsContiguous)
                             facilityLayoutModel.LockDeptTiles(department);
                     });
 
-                    totalContig = contiguityTester.AllDepartmentsAreContiguous(facilityLayoutModel.Facility);
+                    totalContig = contiguityTester.AllDepartmentsAreContiguous(facilityLayoutModel);
 
                     if (loopCounter % options.UIUpdateFrequency == 0)
                         OnOrganizerMileStoneReached(facilityLayoutModel.LayoutArea);                    
@@ -130,7 +130,7 @@ namespace FaciltyLayout.Core
                     MoveTiles(termites, facilityLayoutModel, facilityStats, loopPhase);
                     loopCounter++;
                     refreshCounter++;
-                    totalContig = contiguityTester.AllDepartmentsAreContiguous(facilityLayoutModel.Facility);
+                    totalContig = contiguityTester.AllDepartmentsAreContiguous(facilityLayoutModel);
 
                     if (n < termites.Count)
                     {
@@ -145,7 +145,7 @@ namespace FaciltyLayout.Core
                     {
                         for (int a = 1; a <= facilityStats.DepartmentCount; a++)
                         {
-                            contigIndicator = contiguityTester.DepartmentIsContiguous(a, facilityLayoutModel.Facility);
+                            contigIndicator = contiguityTester.DepartmentIsContiguous(a, facilityLayoutModel);
 
                             if (!contigIndicator)
                                 totalContig = false;
@@ -180,7 +180,7 @@ namespace FaciltyLayout.Core
                 {
                     MoveTiles(termites, facilityLayoutModel, facilityStats, loopPhase);
                     loopCounter++;
-                    totalContig = contiguityTester.AllDepartmentsAreContiguous(facilityLayoutModel.Facility);
+                    totalContig = contiguityTester.AllDepartmentsAreContiguous(facilityLayoutModel);
 
                     if (n < termites.Count)
                     {
@@ -199,7 +199,7 @@ namespace FaciltyLayout.Core
                             {
                                 if (facilityLayoutModel.IsTileAssigned(i, j) == false)
                                 {
-                                    adjTileContainSameDepartment = contiguityTester.AdjacentTilesContainSameDepartment(termites[0].TileDept, i, j, facilityLayoutModel.Facility, facilityStats.DepartmentSizes);
+                                    adjTileContainSameDepartment = contiguityTester.AdjacentTilesContainSameDepartment(termites[0].TileDept, i, j, facilityLayoutModel, facilityStats.DepartmentSizes);
 
                                     if (adjTileContainSameDepartment)
                                     {
