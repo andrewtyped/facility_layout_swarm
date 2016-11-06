@@ -13,10 +13,75 @@ namespace FaciltyLayout.Core
         private readonly TileOrganizerOptions options;
         private readonly ContiguityTester contiguityTester = new ContiguityTester();
         private readonly FacilityEvaluator facilityEvaluator = new FacilityEvaluator();
+        private object locker = new object();
         public TileOrganizer(TileOrganizerOptions options)
         {
             this.options = options;
         }
+
+        public IEnumerable<FacilityLayoutSolution> GreedyMethod(FacilityStats facilityStats)
+        {
+
+            for (int cycle = 0; cycle < options.CycleCount; cycle++)
+            {
+                var startTime = DateTime.Now;
+
+                var facilityLayoutModel = new FacilityLayoutModel(facilityStats);
+                facilityLayoutModel.InitializeDepartmentTiles();
+                facilityLayoutModel.TilePlaced += FacilityLayoutModel_OnTilePlaced;
+                facilityLayoutModel.TileRemoved += FacilityLayoutModel_OnTileRemoved;
+
+                OnFacilityInitialized(facilityLayoutModel, facilityStats);
+
+                var rows = facilityLayoutModel.LayoutArea.Rows;
+                var columns = facilityLayoutModel.LayoutArea.Columns;
+
+                var termiteManager = new TermiteManager(facilityLayoutModel);
+                var termiteCount = options.TermiteCount ?? (int)Round(rows * columns * 1.5); //HACK: magic number
+                var termites = termiteManager.ReleaseTheTermites(termiteCount, options.RatioOfGreedyTermitesToScholarTermites);
+
+                var totalContig = false;
+
+                for(int loopCounter = 0;  !totalContig; loopCounter++)
+                {
+                    if (loopCounter % 25 == 0) //HACK: Magic number
+                    {
+                        facilityLayoutModel.UnlockTiles();
+
+                        for (int y = 1; y < 50; y++) //HACK: magic number
+                        {
+                            MoveTiles(termites, facilityLayoutModel, facilityStats, 1);
+                        }
+                    }
+
+                    MoveTiles(termites, facilityLayoutModel, facilityStats, 1); //HACK: magic number
+
+                    Parallel.For(1, facilityStats.DepartmentCount + 1, (department) =>
+                    {
+                        var departmentIsContiguous = contiguityTester.DepartmentIsContiguous(department, facilityLayoutModel.Facility);
+
+                        //try without lock first. Each iteration of this loop should affect non-overlapping segments of the facility model
+                        if (departmentIsContiguous)
+                            facilityLayoutModel.LockDeptTiles(department);
+                    });
+
+                    totalContig = contiguityTester.AllDepartmentsAreContiguous(facilityLayoutModel.Facility);
+
+                    if (loopCounter % options.UIUpdateFrequency == 0)
+                        OnOrganizerMileStoneReached(facilityLayoutModel.LayoutArea);                    
+                }
+
+                OnOrganizerMileStoneReached(facilityLayoutModel.LayoutArea);                    
+
+                var volumeDistanceCostProduct = facilityEvaluator.VolumeDistanceCostProduct(facilityStats, facilityLayoutModel.Facility);
+                var centroids = facilityEvaluator.CentroidCalculator(facilityStats, facilityLayoutModel.Facility);
+                var runTime = DateTime.Now.Subtract(startTime);
+                var solution = new FacilityLayoutSolution(volumeDistanceCostProduct, runTime, centroids, facilityLayoutModel.Facility);
+
+                yield return solution;
+            }
+        }
+
         public IEnumerable<FacilityLayoutSolution> ScholarMethod(FacilityStats facilityStats)
         {
 

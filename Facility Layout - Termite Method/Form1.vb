@@ -19,40 +19,31 @@ Public Class Form1
     End Sub
 
     Private Sub GreedyTermiteMethodToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GreedyTermiteMethodToolStripMenuItem.Click
-        'Dim Rows As Integer = FacilityLayoutModel.LayoutArea.Rows
-        'Dim Columns As Integer = FacilityLayoutModel.LayoutArea.Columns
+        Dim NumTermites As Integer? = Nothing
+        Dim Phase1Decay As Integer? = Nothing
+        Dim Phase2Decay As Integer? = Nothing
+        Dim gravStart As Integer? = Nothing
+        Dim numcycles As Integer? = Nothing
+        Dim ratioOfGreedyTermitesToScholarTermites As Integer? = Nothing
+        Dim uiUpdateFrequency = 20
 
-        'If TxtRows.Text <> "" Then
-        '    Integer.TryParse(TxtRows.Text, Rows)
-        'End If
+        If TxtTermites.Text <> "" Then
+            Integer.TryParse(TxtTermites.Text, NumTermites)
+        End If
+        If TxtRatio.Text <> "" Then
+            Integer.TryParse(TxtRatio.ToString, ratioOfGreedyTermitesToScholarTermites)
+        End If
+        If TxtReps.Text <> "" Then
+            Integer.TryParse(TxtReps.Text, numcycles)
+        End If
 
-        'If TxtColumns.Text <> "" Then
-        '    Integer.TryParse(TxtColumns.Text, Columns)
-        'End If
+        Dim TileOrganizerOptions = New TileOrganizerOptions(NumTermites, Phase1Decay, Phase2Decay, numcycles, gravStart, ratioOfGreedyTermitesToScholarTermites, uiUpdateFrequency)
+        TileOrganizer = New TileOrganizer(TileOrganizerOptions)
 
-        'ReleaseTheTermites(Math.Round(FacilityStats.FacilitySize.Rows * FacilityStats.FacilitySize.Columns * 1.5))
-
-        'Dim ContigIndicator As Boolean
-        'Dim TotalContig
-        'Dim VDCP As Integer
-
-        'Do
-        '    ReorganizationMethodScholar(myNumTermites)
-
-        '    For i = 1 To FacilityStats.DepartmentCount
-        '        ContigIndicator = contiguityTester.DepartmentIsContiguous(i, FacilityLayoutModel.Facility)
-
-        '        If ContigIndicator = True Then
-        '            FacilityLayoutModel.LockDeptTiles(i)
-        '        End If
-        '    Next
-
-        '    TotalContig = contiguityTester.AllDepartmentsAreContiguous(FacilityLayoutModel.Facility)
-        'Loop Until TotalContig = True
-
-        'VDCP = facilityEvaluator.VolumeDistanceCostProduct(FacilityStats, FacilityLayoutModel.Facility)
-        'MessageBox.Show(VDCP.ToString("################.00"))
-
+        For Each solution As FacilityLayoutSolution In TileOrganizer.GreedyMethod(FacilityStats)
+            Dim OBJValue = solution.VolumeDistanceCostProduct.ToString & vbCrLf & solution.RunTime.ToString
+            MessageBox.Show(OBJValue)
+        Next
     End Sub
 
     Private Sub Form1_TermiteRemovedTile(sender As Object, e As TileEventArgs) Handles TileOrganizer.TileRemoved
