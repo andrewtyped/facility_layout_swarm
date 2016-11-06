@@ -145,7 +145,7 @@ Public Class Form1
                     RowCounter = RowCounter + 25
                 End If
 
-                Dim department = e.Facility(i, j)
+                Dim department = e.Facility(i * e.LayoutArea.Columns + j)
                 Tile(i, j).BackColor = Color.FromArgb(myTileColors(department, 0), myTileColors(department, 1),
                                                       myTileColors(department, 2))
                 Tile(i, j).Text = department.ToString

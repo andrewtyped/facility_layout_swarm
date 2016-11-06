@@ -11,21 +11,18 @@ namespace FaciltyLayout.Core.Models
         public GridSize LayoutArea { get; }
         public int DepartmentCount { get; }
 
-        public int[,] Facility { get; }
+        public int[] Facility { get; }
 
         public FacilityInitializedEventArgs(FacilityLayoutModel facilityLayoutModel, FacilityStats facilityStats)
         {
             LayoutArea = facilityLayoutModel.LayoutArea;
             DepartmentCount = facilityStats.DepartmentCount;
 
-            Facility = new int[LayoutArea.Rows, LayoutArea.Columns];
+            Facility = new int[LayoutArea.Rows * LayoutArea.Columns];
 
-            for(int i = 0; i < LayoutArea.Rows; i++)
+            for(int i = 0; i < LayoutArea.Rows * LayoutArea.Columns;  i++)
             {
-                for(int j = 0; j < LayoutArea.Columns; j++)
-                {
-                    Facility[i, j] = facilityLayoutModel.Facility[i, j];
-                }
+                Facility[i] = facilityLayoutModel.Facility[i];
             }
         }
     }

@@ -13,9 +13,9 @@ namespace FaciltyLayout.Core.Models
         public TimeSpan RunTime { get; }
         public IReadOnlyDictionary<int, Position> DepartmentCentroids { get; }
 
-        public int[,] FinalLayout { get; }
+        public int[] FinalLayout { get; }
 
-        public FacilityLayoutSolution(double volumeDistanceCostProduct, TimeSpan runTime, IReadOnlyDictionary<int,Position> departmentCentroids, int[,] finalLayout)
+        public FacilityLayoutSolution(double volumeDistanceCostProduct, TimeSpan runTime, IReadOnlyDictionary<int,Position> departmentCentroids, int[] finalLayout)
         {
             VolumeDistanceCostProduct = volumeDistanceCostProduct;
             RunTime = runTime;

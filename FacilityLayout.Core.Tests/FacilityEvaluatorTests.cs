@@ -14,7 +14,7 @@ namespace FacilityLayout.Core.Tests
     public class FacilityEvaluatorTests
     {
         private FacilityEvaluator _facilityEvaluator;
-        private int[,] _facilityMatrix;
+        private int[] _facilityMatrix;
         private int[,] _volumeMatrix;
         private double[,] _costMatrix;
         private int[] _deptSizes;
@@ -23,15 +23,15 @@ namespace FacilityLayout.Core.Tests
         [SetUp]
         public void SetUp()
         {
-            _facilityMatrix = new int[4, 4] //extra space comes from the space larger than the facility itself on which the algorithm executes
+            _facilityMatrix = new int[16] //extra space comes from the space larger than the facility itself on which the algorithm executes
             {
-                {0, 1, 1, 1 },
-                {0, 2, 2, 2 },
-                {0, 3, 3, 3 },
-                {0, 0, 0, 0 }
+                0, 1, 1, 1 ,
+                0, 2, 2, 2 ,
+                0, 3, 3, 3 ,
+                0, 0, 0, 0 ,
             };
 
-            _volumeMatrix = new int[4, 4]
+            _volumeMatrix = new int[4,4]
             {
                 {0, 0, 0, 0 },
                 {0, 0, 0, 10 },
@@ -68,7 +68,7 @@ namespace FacilityLayout.Core.Tests
                 _volumeMatrix,
                 _costMatrix);
 
-            var centroids = _facilityEvaluator.CentroidCalculator(facilityStats, new FacilityLayoutModel(_facilityMatrix));
+            var centroids = _facilityEvaluator.CentroidCalculator(facilityStats, new FacilityLayoutModel(_facilityMatrix, new GridSize(4,4)));
 
             Assert.AreEqual(0, centroids[1].Row);
             Assert.AreEqual(2, centroids[1].Column);
@@ -94,7 +94,7 @@ namespace FacilityLayout.Core.Tests
                 _volumeMatrix,
                 _costMatrix);
 
-            double product = _facilityEvaluator.VolumeDistanceCostProduct(facilityStats, new FacilityLayoutModel(_facilityMatrix));
+            double product = _facilityEvaluator.VolumeDistanceCostProduct(facilityStats, new FacilityLayoutModel(_facilityMatrix, new GridSize(4, 4)));
 
             //VDC formula
             //sum(

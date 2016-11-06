@@ -14,26 +14,26 @@ namespace FacilityLayout.Core.Tests
     public class ContiguityTesterTests
     {
         private ContiguityTester _contiguityTester;
-        private int[,] _contiguousFacility;
-        private int[,] _nonContiguousFacility;
+        private int[] _contiguousFacility;
+        private int[] _nonContiguousFacility;
     
         [SetUp]
         public void SetUp()
         {
-            _contiguousFacility = new int[4, 4]
+            _contiguousFacility = new int[16]
             {
-                {2, 2, 0 ,0 },
-                {2, 2, 1 ,0 },
-                {0, 1, 1 ,1 },
-                {0, 1, 0 ,0 },
+                2, 2, 0 ,0 ,
+                2, 2, 1 ,0 ,
+                0, 1, 1 ,1 ,
+                0, 1, 0 ,0 ,
             };
 
-            _nonContiguousFacility = new int[4, 4]
+            _nonContiguousFacility = new int[16]
             {
-                {0, 2, 0 ,0 },
-                {0, 2, 1 ,0 },
-                {0, 1, 1 ,1 },
-                {0, 2, 0 ,0 },
+                0, 2, 0 ,0 ,
+                0, 2, 1 ,0 ,
+                0, 1, 1 ,1 ,
+                0, 2, 0 ,0 ,
             };
 
             _contiguityTester = new ContiguityTester();
@@ -42,25 +42,25 @@ namespace FacilityLayout.Core.Tests
         [Test]
         public void Detects_Contiguity_Of_One_Department()
         {
-            Assert.IsTrue(_contiguityTester.DepartmentIsContiguous(1, new FacilityLayoutModel(_contiguousFacility)));
+            Assert.IsTrue(_contiguityTester.DepartmentIsContiguous(1, new FacilityLayoutModel(_contiguousFacility, new GridSize(4,4))));
         }
 
         [Test]
         public void Detects_NonContiguity_Of_One_Department()
         {
-            Assert.IsFalse(_contiguityTester.DepartmentIsContiguous(2, new FacilityLayoutModel(_nonContiguousFacility)));
+            Assert.IsFalse(_contiguityTester.DepartmentIsContiguous(2, new FacilityLayoutModel(_nonContiguousFacility, new GridSize(4, 4))));
         }
 
         [Test]
         public void Detects_Contiguity_Of_All_Departments()
         {
-            Assert.IsTrue(_contiguityTester.AllDepartmentsAreContiguous(new FacilityLayoutModel(_contiguousFacility)));
+            Assert.IsTrue(_contiguityTester.AllDepartmentsAreContiguous(new FacilityLayoutModel(_contiguousFacility, new GridSize(4, 4))));
         }
 
         [Test]
         public void Detects_Contiguity_Of_Any_Department()
         {
-            Assert.IsFalse(_contiguityTester.AllDepartmentsAreContiguous(new FacilityLayoutModel(_nonContiguousFacility)));
+            Assert.IsFalse(_contiguityTester.AllDepartmentsAreContiguous(new FacilityLayoutModel(_nonContiguousFacility, new GridSize(4, 4))));
         }
 
         [Test]
@@ -68,7 +68,7 @@ namespace FacilityLayout.Core.Tests
         {
             int[] myDeptSizes = new int[] { 0, 5, 4 };
 
-            var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(1, 3, 2, new FacilityLayoutModel(_contiguousFacility), myDeptSizes);
+            var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(1, 3, 2, new FacilityLayoutModel(_contiguousFacility, new GridSize(4, 4)), myDeptSizes);
             Assert.IsTrue(adjTilesContainSameDept);
         }
 
@@ -77,7 +77,7 @@ namespace FacilityLayout.Core.Tests
         {
             int[] myDeptSizes = new int[] { 0, 5, 4 };
 
-            var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(2, 2, 3, new FacilityLayoutModel(_contiguousFacility), myDeptSizes);
+            var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(2, 2, 3, new FacilityLayoutModel(_contiguousFacility, new GridSize(4, 4)), myDeptSizes);
             Assert.IsFalse(adjTilesContainSameDept);
         }
 
@@ -86,7 +86,7 @@ namespace FacilityLayout.Core.Tests
         {
             int[] myDeptSizes = new int[] { 0, 5, 4 };
 
-            var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(2, 2, 2, new FacilityLayoutModel(_contiguousFacility), myDeptSizes);
+            var adjTilesContainSameDept = _contiguityTester.AdjacentTilesContainSameDepartment(2, 2, 2, new FacilityLayoutModel(_contiguousFacility, new GridSize(4, 4)), myDeptSizes);
             Assert.IsTrue(adjTilesContainSameDept);
         }
 
@@ -105,7 +105,7 @@ namespace FacilityLayout.Core.Tests
                 }
             };
 
-            var numSimilarTiles = _contiguityTester.CountAdjacentTilesOfSameDepartment(termites[0].Position, new FacilityLayoutModel(_contiguousFacility));
+            var numSimilarTiles = _contiguityTester.CountAdjacentTilesOfSameDepartment(termites[0].Position, new FacilityLayoutModel(_contiguousFacility, new GridSize(4, 4)));
 
             Assert.AreEqual(expectedNumSimilarTiles, numSimilarTiles);
         }

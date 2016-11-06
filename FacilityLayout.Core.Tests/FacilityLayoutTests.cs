@@ -25,8 +25,7 @@ namespace FacilityLayout.Core.Tests
         [Test]
         public void InitializeDepartmentTiles_Sets_Size_Of_Algortihm_Space()
         {
-            Assert.AreEqual(facilityLayout.LayoutArea.Rows, facilityLayout.Facility.GetLength(0));
-            Assert.AreEqual(facilityLayout.LayoutArea.Columns, facilityLayout.Facility.GetLength(1));
+            Assert.AreEqual(facilityLayout.LayoutArea.Rows* facilityLayout.LayoutArea.Columns, facilityLayout.Facility.GetLength(0));
         }
         
         [Test]
