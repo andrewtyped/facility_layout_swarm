@@ -230,6 +230,8 @@ namespace FaciltyLayout.Core
                 facilityLayoutModel.TilePlaced -= FacilityLayoutModel_OnTilePlaced;
                 facilityLayoutModel.TileRemoved -= FacilityLayoutModel_OnTileRemoved;
 
+                cycle++;
+
                 yield return solution;
             }
         }
