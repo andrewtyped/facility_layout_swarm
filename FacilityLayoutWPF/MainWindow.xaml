@@ -4,9 +4,89 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FacilityLayoutWPF"
+        xmlns:vm="clr-namespace:FacilityLayoutWPF.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow">
+    <Window.Resources>
+        <local:DepartmentColorConverter x:Key="DepartmentColorConverter"/>
+        <Style TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Width" Value="50"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+    </Window.Resources>
+    <Window.DataContext>
+        <vm:FacilityLayoutViewModel/>
+    </Window.DataContext>
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Width="{Binding FacilityStats.FacilitySize.Columns * 51}"
+                                 Height="{Binding FacilityStats.FacilitySize.Rows * 51}" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ItemsControl Grid.Row="0" Grid.Column="0" ItemsSource="{Binding Solution}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderThickness="1" BorderBrush="Black" Width="50" Height="50" Background="{Binding Converter={StaticResource DepartmentColorConverter}}">
+                            <TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="{Binding FacilityStats.FacilitySize.Columns}" Rows="{Binding FacilityStats.FacilitySize.Rows}" Margin="5">
+                        </UniformGrid>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Number Termites"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Options.TermiteCount, TargetNullValue=''}"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Phase 1 Decay"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Options.Phase1Decay, TargetNullValue=''}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Phase 2 Decay"/>
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Options.Phase2Decay, TargetNullValue=''}"/>
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Gravitation Start Point"/>
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Options.GravitationStartPoint, TargetNullValue=''}"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Greedy/Scholar Ratio"/>
+            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Options.GreedyScholarRatio, TargetNullValue=''}"/>
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="Cycles"/>
+            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Options.SolutionCount, TargetNullValue=''}"/>
+            <StackPanel Orientation="Vertical" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2">
+                <Button Content="Load Facility Data" Command="{Binding LoadFacilityData}"/>
+                <Button Content="Solve" Command="{Binding Solve}"/>
+            </StackPanel>
+        </Grid>
+        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FacilityStatsDisplay}" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+
     </Grid>
 </Window>
