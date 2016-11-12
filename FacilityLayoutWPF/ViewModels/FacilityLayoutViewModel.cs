@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 
 namespace FacilityLayoutWPF.ViewModels
@@ -30,17 +31,26 @@ namespace FacilityLayoutWPF.ViewModels
             }
         }
 
-        private ObservableCollection<int> _solution;
+        private FacilityLayoutSolution _selectedSolution;
 
-        public ObservableCollection<int> Solution
+        public FacilityLayoutSolution SelectedSolution
+        {
+            get { return _selectedSolution; }
+            set { SetProperty(ref _selectedSolution, value); }
+        }
+
+
+        private ObservableCollection<FacilityLayoutSolution> _solutions;
+
+        public ObservableCollection<FacilityLayoutSolution> Solutions
         {
             get
             {
-                return _solution;
+                return _solutions;
             }
             set
             {
-                SetProperty(ref _solution, value);
+                SetProperty(ref _solutions, value);
             }
         }
 
@@ -58,6 +68,7 @@ namespace FacilityLayoutWPF.ViewModels
             Options = new FacilityLayoutOptionsViewModel();
             LoadFacilityData = new RelayCommand(OnLoadFacilityData);
             Solve = new RelayCommand(OnSolve);
+            Solutions = new ObservableCollection<FacilityLayoutSolution>();
         }
 
         public RelayCommand LoadFacilityData { get; }
@@ -94,7 +105,8 @@ namespace FacilityLayoutWPF.ViewModels
             {
                 foreach(var solution in tileOrganizer.ScholarMethod(FacilityStats))
                 {
-                    Solution = new ObservableCollection<int>(solution.FinalLayout);
+                    Action<FacilityLayoutSolution> Add = Solutions.Add;
+                    Application.Current.Dispatcher.BeginInvoke(Add, solution);
                 }
             });
 
