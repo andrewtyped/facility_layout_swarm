@@ -1,0 +1,42 @@
+﻿<UserControl
+    x:Class="FacilityLayoutWPF.VolumeDistanceCostProductSummaryView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dv="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+    xmlns:local="clr-namespace:FacilityLayoutWPF"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:FacilityLayoutWPF.ViewModels"
+    d:DesignHeight="300"
+    d:DesignWidth="300"
+    mc:Ignorable="d">
+    <Grid>
+        <dv:Chart Title="Volume-Distance-Cost Products" Style="{DynamicResource MyChartStyle}">
+            <dv:Chart.LegendStyle>
+                <Style TargetType="Control">
+                    <Setter Property="Width" Value="0" />
+                    <Setter Property="Height" Value="0" />
+                </Style>
+            </dv:Chart.LegendStyle>
+            <dv:LineSeries
+                DependentValueBinding="{Binding Y}"
+                IndependentValueBinding="{Binding X}"
+                ItemsSource="{Binding VDPSummary.Points}">
+                <dv:LineSeries.DependentRangeAxis>
+                    <dv:LinearAxis
+                        Title="Volume-Distance-Cost Product"
+                        Orientation="Y"
+                        ShowGridLines="True" />
+                </dv:LineSeries.DependentRangeAxis>
+            </dv:LineSeries>
+            <dv:Chart.Axes>
+                <dv:LinearAxis
+                    Title="Solution #"
+                    Interval="2"
+                    Minimum="0"
+                    Orientation="X"
+                    ShowGridLines="True" />
+            </dv:Chart.Axes>
+        </dv:Chart>
+    </Grid>
+</UserControl>

@@ -1,81 +1,186 @@
-﻿<Window x:Class="FacilityLayoutWPF.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FacilityLayoutWPF"
-        xmlns:vm="clr-namespace:FacilityLayoutWPF.ViewModels"
-        xmlns:core="clr-namespace:FaciltyLayout.Core.Models;assembly=FaciltyLayout.Core"
-        mc:Ignorable="d"
-        Title="MainWindow"
-        SizeToContent="WidthAndHeight" Foreground="Black" Background="White">
+﻿<Window
+    x:Class="FacilityLayoutWPF.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="clr-namespace:FaciltyLayout.Core.Models;assembly=FaciltyLayout.Core"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:local="clr-namespace:FacilityLayoutWPF"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:FacilityLayoutWPF.ViewModels"
+    Title="MainWindow"
+    Background="White"
+    Foreground="Black"
+    SizeToContent="WidthAndHeight"
+    mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles.xaml"/>
+                <ResourceDictionary Source="Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <local:DepartmentColorConverter x:Key="DepartmentColorConverter"/>
+            <local:DepartmentColorConverter x:Key="DepartmentColorConverter" />
             <DataTemplate DataType="{x:Type core:FacilityLayoutSolution}">
-                <local:FacilityLayoutSolutionView/>
+                <local:FacilityLayoutSolutionView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:CentroidsSummaryViewModel}">
+                <local:CentroidSummaryView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:VDPSummaryViewModel}">
+                <local:VolumeDistanceCostProductSummaryView />
             </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
     <Window.DataContext>
-        <vm:FacilityLayoutViewModel/>
+        <vm:FacilityLayoutViewModel />
     </Window.DataContext>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <Border Grid.Column="1" Margin="5" BorderBrush="WhiteSmoke" BorderThickness="1,0,0,0">
-            <StackPanel>
-                <TextBlock Text="Solutions" Style="{StaticResource Header}"/>
-                <ListBox x:Name="SolutionList" ItemsSource="{Binding Solutions}" SelectedItem="{Binding SelectedSolution}" Height="Auto" Margin="5" BorderBrush="White">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Id, StringFormat=Solution \{0\}}"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </StackPanel>
+        <Border
+            Grid.Column="1"
+            Margin="5"
+            BorderBrush="WhiteSmoke"
+            BorderThickness="1,0,0,0">
+            <TabControl HorizontalAlignment="Stretch">
+                <TabItem Header="Solutions">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Style="{StaticResource Header}" Text="Solutions" />
+                            <ListBox
+                                x:Name="SolutionList"
+                                Height="Auto"
+                                Margin="5"
+                                BorderBrush="White"
+                                ItemsSource="{Binding Solutions}"
+                                SelectedItem="{Binding SelectedSolution}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Id, StringFormat=Solution \{0\}}" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                        <ContentControl Grid.Column="1" Content="{Binding SelectedItem, ElementName=SolutionList}" />
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Summaries">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Header}" Text="Summaries" />
+                            <ListBox
+                                Height="Auto"
+                                Margin="5"
+                                BorderBrush="White">
+                                <local:ButtonListBoxItem Command="{Binding ShowCentroidsSummaryCommand}" Content="Centroids" />
+                                <local:ButtonListBoxItem Command="{Binding ShowVolumeDistanceCostProductSummaryCommand}" Content="Volume-Distance-Cost Product" />
+                            </ListBox>
+                        </StackPanel>
+                        <ContentControl Grid.Column="1" Content="{Binding CurrentSummaryViewModel}" />
+                    </Grid>
+                </TabItem>
+            </TabControl>
+
         </Border>
-        <ContentControl Grid.Column="2" Content="{Binding SelectedItem, ElementName=SolutionList}"/>
-        <StackPanel Grid.Row="0" Grid.Column="0" Margin="5">
-            <TextBlock Text="Tile Organizer Options" Style="{StaticResource ResourceKey=Header}"/>
+
+        <StackPanel
+            Grid.Row="0"
+            Grid.Column="0"
+            Margin="5">
+            <TextBlock Style="{StaticResource ResourceKey=Header}" Text="Tile Organizer Options" />
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Number Termites"/>
-                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Options.TermiteCount, TargetNullValue=''}"/>
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="Phase 1 Decay"/>
-                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Options.Phase1Decay, TargetNullValue=''}"/>
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Phase 2 Decay"/>
-                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Options.Phase2Decay, TargetNullValue=''}"/>
-                <TextBlock Grid.Row="3" Grid.Column="0" Text="Gravitation Start Point"/>
-                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Options.GravitationStartPoint, TargetNullValue=''}"/>
-                <TextBlock Grid.Row="4" Grid.Column="0" Text="Greedy/Scholar Ratio"/>
-                <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Options.GreedyScholarRatio, TargetNullValue=''}"/>
-                <TextBlock Grid.Row="5" Grid.Column="0" Text="Cycles"/>
-                <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Options.SolutionCount, TargetNullValue=''}"/>
-                <WrapPanel Orientation="Vertical" Grid.Row="6" Grid.Column="1">
-                    <Button Content="Load Facility Data" Command="{Binding LoadFacilityData}" Padding="5"/>
-                    <Button Content="Solve" Command="{Binding Solve}" Padding="5"/>
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Text="Number Termites" />
+                <TextBox
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Text="{Binding Options.TermiteCount, TargetNullValue=''}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Text="Phase 1 Decay" />
+                <TextBox
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Text="{Binding Options.Phase1Decay, TargetNullValue=''}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Text="Phase 2 Decay" />
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Text="{Binding Options.Phase2Decay, TargetNullValue=''}" />
+                <TextBlock
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Text="Gravitation Start Point" />
+                <TextBox
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Text="{Binding Options.GravitationStartPoint, TargetNullValue=''}" />
+                <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    Text="Greedy/Scholar Ratio" />
+                <TextBox
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Text="{Binding Options.GreedyScholarRatio, TargetNullValue=''}" />
+                <TextBlock
+                    Grid.Row="5"
+                    Grid.Column="0"
+                    Text="Cycles" />
+                <TextBox
+                    Grid.Row="5"
+                    Grid.Column="1"
+                    Text="{Binding Options.SolutionCount, TargetNullValue=''}" />
+                <WrapPanel
+                    Grid.Row="6"
+                    Grid.Column="1"
+                    Orientation="Vertical">
+                    <Button
+                        Padding="5"
+                        Command="{Binding LoadFacilityData}"
+                        Content="Load Facility Data" />
+                    <Button
+                        Padding="5"
+                        Command="{Binding Solve}"
+                        Content="Solve" />
                 </WrapPanel>
-                <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding FacilityStatsDisplay}" Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <TextBlock
+                    Grid.Row="7"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Height="Auto"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Text="{Binding FacilityStatsDisplay}" />
             </Grid>
         </StackPanel>
     </Grid>

@@ -16,9 +16,9 @@ namespace FaciltyLayout.Core
         ///     2-d array showing the center-x coord for each dept in the [,0] position, and the center-y
         ///     coord for each dept in the [,1] position. The [n,]th row denotes the nth department.
         /// </returns>
-        internal IReadOnlyDictionary<int,Position> CentroidCalculator(FacilityStats facilityStats, FacilityLayoutModel facility)
+        internal IReadOnlyDictionary<int,DoublePosition> CentroidCalculator(FacilityStats facilityStats, FacilityLayoutModel facility)
         {
-            var centroids = new Dictionary<int, Position>();
+            var centroids = new Dictionary<int, DoublePosition>();
 
             for (var k = 1; k <= facilityStats.DepartmentCount; k++)
             {
@@ -37,9 +37,8 @@ namespace FaciltyLayout.Core
                     }
                 }
 
-                //TODO: This is always truncating the expression to an int. Is that right?
-                centroids[k] = new Position(rowSums / facilityStats.DepartmentSizes[k],
-                                            columnSums / facilityStats.DepartmentSizes[k]);
+                centroids[k] = new DoublePosition((double)rowSums / facilityStats.DepartmentSizes[k],
+                                            (double)columnSums / facilityStats.DepartmentSizes[k]);
             }
 
             return centroids;

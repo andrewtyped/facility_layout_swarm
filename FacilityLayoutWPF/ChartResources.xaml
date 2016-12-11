@@ -1,0 +1,255 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Primitives="clr-namespace:System.Windows.Controls.DataVisualization.Charting.Primitives;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+    xmlns:chartingToolkit="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+    xmlns:local="clr-namespace:FacilityLayoutWPF"
+    xmlns:visualizationToolkit="clr-namespace:System.Windows.Controls.DataVisualization;assembly=System.Windows.Controls.DataVisualization.Toolkit">
+
+    <SolidColorBrush x:Key="LightYellowBrush" Color="#FFFAF6BD" />
+    <SolidColorBrush x:Key="DarkBlueBrush" Color="#FF144578" />
+    <Style x:Key="MyChartStyle" TargetType="{x:Type chartingToolkit:Chart}">
+        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Palette">
+            <Setter.Value>
+                <visualizationToolkit:ResourceDictionaryCollection>
+                    <ResourceDictionary>
+                        <SolidColorBrush x:Key="Background" Color="Yellow" />
+                        <Style x:Key="DataShapeStyle" TargetType="{x:Type Shape}">
+                            <Setter Property="Stroke">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="LimeGreen" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="StrokeThickness" Value="2" />
+                            <Setter Property="StrokeMiterLimit" Value="1" />
+                            <Setter Property="Fill">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="Black" />
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                        <Style x:Key="DataPointStyle" TargetType="{x:Type Control}">
+                            <Setter Property="Background" Value="{StaticResource DarkBlueBrush}" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type chartingToolkit:DataPoint}">
+                                        <Grid x:Name="Root" Opacity="0">
+                                            <Grid.ToolTip>
+                                                <ContentControl Content="{TemplateBinding FormattedDependentValue}" />
+                                            </Grid.ToolTip>
+                                            <Ellipse Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" />
+                                            <Ellipse Fill="{StaticResource DarkBlueBrush}" RenderTransformOrigin="0.661,0.321" />
+                                            <Ellipse
+                                                x:Name="SelectionHighlight"
+                                                Fill="Red"
+                                                Opacity="0" />
+                                            <Ellipse
+                                                x:Name="MouseOverHighlight"
+                                                Fill="White"
+                                                Opacity="0" />
+                                            <VisualStateManager.VisualStateGroups>
+                                                <VisualStateGroup x:Name="CommonStates">
+                                                    <VisualStateGroup.Transitions>
+                                                        <VisualTransition
+                                                            GeneratedDuration="0:0:0.1"
+                                                            GeneratedEasingFunction="{x:Null}"
+                                                            Storyboard="{x:Null}"
+                                                            From="{x:Null}"
+                                                            To="{x:Null}" />
+                                                    </VisualStateGroup.Transitions>
+                                                    <VisualState x:Name="Normal" />
+                                                    <VisualState x:Name="MouseOver">
+                                                        <Storyboard>
+                                                            <DoubleAnimationUsingKeyFrames
+                                                                BeginTime="0"
+                                                                Storyboard.TargetName="MouseOverHighlight"
+                                                                Storyboard.TargetProperty="(UIElement.Opacity)"
+                                                                Duration="0:0:0.001">
+                                                                <SplineDoubleKeyFrame KeyTime="0" Value="0.24" />
+                                                            </DoubleAnimationUsingKeyFrames>
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                </VisualStateGroup>
+                                                <VisualStateGroup x:Name="SelectionStates">
+                                                    <VisualStateGroup.Transitions>
+                                                        <VisualTransition
+                                                            GeneratedDuration="0:0:0.1"
+                                                            GeneratedEasingFunction="{x:Null}"
+                                                            Storyboard="{x:Null}"
+                                                            From="{x:Null}"
+                                                            To="{x:Null}" />
+                                                    </VisualStateGroup.Transitions>
+                                                    <VisualState x:Name="Unselected" />
+                                                    <VisualState x:Name="Selected">
+                                                        <Storyboard>
+                                                            <DoubleAnimationUsingKeyFrames
+                                                                BeginTime="0"
+                                                                Storyboard.TargetName="SelectionHighlight"
+                                                                Storyboard.TargetProperty="(UIElement.Opacity)"
+                                                                Duration="0:0:0.001">
+                                                                <SplineDoubleKeyFrame KeyTime="0" Value="0.18" />
+                                                            </DoubleAnimationUsingKeyFrames>
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                </VisualStateGroup>
+                                                <VisualStateGroup x:Name="RevealStates">
+                                                    <VisualStateGroup.Transitions>
+                                                        <VisualTransition
+                                                            GeneratedDuration="0:0:0.5"
+                                                            GeneratedEasingFunction="{x:Null}"
+                                                            Storyboard="{x:Null}"
+                                                            From="{x:Null}"
+                                                            To="{x:Null}" />
+                                                    </VisualStateGroup.Transitions>
+                                                    <VisualState x:Name="Shown">
+                                                        <Storyboard>
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetName="Root"
+                                                                Storyboard.TargetProperty="Opacity"
+                                                                To="1"
+                                                                Duration="0" />
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                    <VisualState x:Name="Hidden">
+                                                        <Storyboard>
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetName="Root"
+                                                                Storyboard.TargetProperty="Opacity"
+                                                                To="0"
+                                                                Duration="0" />
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                </VisualStateGroup>
+                                            </VisualStateManager.VisualStateGroups>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ResourceDictionary>
+                    <!--  Additional ResourceDictionaries are used for subsequent series  -->
+                    <!--<ResourceDictionary>
+                        <RadialGradientBrush x:Key="Background" Center="0.075,0.015" GradientOrigin="-0.1,-0.1" RadiusX="1.05" RadiusY="0.9">
+                            <GradientStop Color="#FFFBB7B5" />
+                            <GradientStop Offset="1" Color="#FF702828" />
+                        </RadialGradientBrush>
+                        <Style x:Key="DataShapeStyle" TargetType="{x:Type Shape}">
+                            <Setter Property="Stroke">
+                                <Setter.Value>
+                                    <RadialGradientBrush Center="0.075,0.015" GradientOrigin="-0.1,-0.1" RadiusX="1.05" RadiusY="0.9">
+                                        <GradientStop Color="#FFFBB7B5" />
+                                        <GradientStop Offset="1" Color="#FF702828" />
+                                    </RadialGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="StrokeThickness" Value="2" />
+                            <Setter Property="StrokeMiterLimit" Value="1" />
+                            <Setter Property="Fill">
+                                <Setter.Value>
+                                    <RadialGradientBrush Center="0.075,0.015" GradientOrigin="-0.1,-0.1" RadiusX="1.05" RadiusY="0.9">
+                                        <GradientStop Color="#FFFBB7B5" />
+                                        <GradientStop Offset="1" Color="#FF702828" />
+                                    </RadialGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                        <Style x:Key="DataPointStyle" TargetType="{x:Type Control}">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <RadialGradientBrush Center="0.075,0.015" GradientOrigin="-0.1,-0.1" RadiusX="1.05" RadiusY="0.9">
+                                        <GradientStop Color="#FFFBB7B5" />
+                                        <GradientStop Offset="1" Color="#FF702828" />
+                                    </RadialGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ResourceDictionary>-->
+                </visualizationToolkit:ResourceDictionaryCollection>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="TitleStyle">
+            <Setter.Value>
+                <Style TargetType="{x:Type visualizationToolkit:Title}">
+                    <Setter Property="FontSize" Value="16" />
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="Margin" Value="0,10" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="LegendStyle">
+            <Setter.Value>
+                <Style TargetType="{x:Type visualizationToolkit:Legend}">
+                    <Setter Property="Margin" Value="15,0" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="BorderBrush" Value="#FFDBDBDB" />
+                    <Setter Property="Background">
+                        <Setter.Value>
+                            <LinearGradientBrush StartPoint="0.558,0.995" EndPoint="0.442,0.005">
+                                <GradientStop Color="#FFDBDBDB" />
+                                <GradientStop Offset="1" Color="White" />
+                            </LinearGradientBrush>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ChartAreaStyle">
+            <Setter.Value>
+                <Style TargetType="{x:Type Panel}">
+                    <Setter Property="MinWidth" Value="100" />
+                    <Setter Property="MinHeight" Value="75" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="PlotAreaStyle">
+            <Setter.Value>
+                <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Background" Value="{StaticResource LightYellowBrush}" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type chartingToolkit:Chart}">
+                    <Border
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <visualizationToolkit:Title Content="{TemplateBinding Title}" Style="{TemplateBinding TitleStyle}" />
+                            <Grid Grid.Row="1" Margin="0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <visualizationToolkit:Legend
+                                    x:Name="Legend"
+                                    Grid.Column="1"
+                                    Header="{TemplateBinding LegendTitle}"
+                                    Style="{TemplateBinding LegendStyle}"
+                                    Visibility="{Binding ContentVisibility}" />
+                                <Primitives:EdgePanel x:Name="ChartArea" Style="{TemplateBinding ChartAreaStyle}">
+                                    <Grid Panel.ZIndex="-1" Style="{TemplateBinding PlotAreaStyle}" />
+                                    <Border
+                                        Panel.ZIndex="10"
+                                        BorderBrush="#FF919191"
+                                        BorderThickness="1" />
+                                </Primitives:EdgePanel>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

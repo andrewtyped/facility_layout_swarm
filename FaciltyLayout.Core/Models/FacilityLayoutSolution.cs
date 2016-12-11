@@ -12,18 +12,18 @@ namespace FaciltyLayout.Core.Models
         public int Id { get; }
         public double VolumeDistanceCostProduct { get; }
         public TimeSpan RunTime { get; }
-        public IReadOnlyDictionary<int, Position> DepartmentCentroids { get; }
+        public IReadOnlyDictionary<int, DoublePosition> DepartmentCentroids { get; }
         public GridSize FacilitySize { get; }
 
         public int[] FinalLayout { get; }
 
         public FacilityLayoutSolution()
         {
-            DepartmentCentroids = new ReadOnlyDictionary<int, Position>(new Dictionary<int, Position>());
+            DepartmentCentroids = new ReadOnlyDictionary<int, DoublePosition>(new Dictionary<int, DoublePosition>());
             FinalLayout = new int[1];
         }
 
-        public FacilityLayoutSolution(int id, double volumeDistanceCostProduct, TimeSpan runTime, IReadOnlyDictionary<int,Position> departmentCentroids, int[] finalLayout, GridSize facilitySize)
+        public FacilityLayoutSolution(int id, double volumeDistanceCostProduct, TimeSpan runTime, IReadOnlyDictionary<int,DoublePosition> departmentCentroids, int[] finalLayout, GridSize facilitySize)
         {
             Id = id;
             VolumeDistanceCostProduct = volumeDistanceCostProduct;

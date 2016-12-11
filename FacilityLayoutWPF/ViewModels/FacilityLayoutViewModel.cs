@@ -8,12 +8,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace FacilityLayoutWPF.ViewModels
 {
     public class FacilityLayoutViewModel : BindableBase
     {
+        private readonly IIOService _ioService = new FacilityLayoutIOService();
         public FacilityLayoutOptionsViewModel Options { get; }
 
         private FacilityStats _facilityStats;
@@ -39,7 +41,6 @@ namespace FacilityLayoutWPF.ViewModels
             set { SetProperty(ref _selectedSolution, value); }
         }
 
-
         private ObservableCollection<FacilityLayoutSolution> _solutions;
 
         public ObservableCollection<FacilityLayoutSolution> Solutions
@@ -54,14 +55,23 @@ namespace FacilityLayoutWPF.ViewModels
             }
         }
 
+        private ISolutionSummarizer currentSummaryViewModel;
+
+        public ISolutionSummarizer CurrentSummaryViewModel
+        {
+            get { return currentSummaryViewModel; }
+            set { SetProperty(ref currentSummaryViewModel, value); }
+        }
+
+        private readonly CentroidsSummaryViewModel centroidsSummaryViewModel;
+        private readonly VDPSummaryViewModel volumeDistanceCostProductSummaryViewModel;
+
+       
+
         public string FacilityStatsDisplay
         {
             get { return FacilityStats?.ToString() ?? ""; }
         }
-
-        
-
-        private readonly IIOService _ioService = new FacilityLayoutIOService();
 
         public FacilityLayoutViewModel()
         {
@@ -69,6 +79,12 @@ namespace FacilityLayoutWPF.ViewModels
             LoadFacilityData = new RelayCommand(OnLoadFacilityData);
             Solve = new RelayCommand(OnSolve);
             Solutions = new ObservableCollection<FacilityLayoutSolution>();
+
+            this.centroidsSummaryViewModel = new CentroidsSummaryViewModel();
+            this.volumeDistanceCostProductSummaryViewModel = new VDPSummaryViewModel();
+
+            ShowCentroidsSummaryCommand = new RelayCommand(OnShowCentroidsSummary, CanShowCentroidsSummary);
+            ShowVolumeDistanceCostProductSummaryCommand = new RelayCommand(OnShowVolumeDistanceCostProductSummary);
         }
 
         public RelayCommand LoadFacilityData { get; }
@@ -108,10 +124,29 @@ namespace FacilityLayoutWPF.ViewModels
                     Action<FacilityLayoutSolution> Add = Solutions.Add;
                     Application.Current.Dispatcher.BeginInvoke(Add, solution);
                 }
+
+                this.centroidsSummaryViewModel.Initialize(Solutions);
+                this.volumeDistanceCostProductSummaryViewModel.Initialize(Solutions);
             });
+        }
 
+        public ICommand ShowCentroidsSummaryCommand { get; }
+        public ICommand ShowVolumeDistanceCostProductSummaryCommand { get; }
 
+        private bool CanShowCentroidsSummary()
+        {
+            return true;
+            //return this.centroidsSummaryViewModel != null;
+        }
 
+        private void OnShowCentroidsSummary()
+        {
+            this.CurrentSummaryViewModel = this.centroidsSummaryViewModel;
+        }
+
+        private void OnShowVolumeDistanceCostProductSummary()
+        {
+            this.CurrentSummaryViewModel = this.volumeDistanceCostProductSummaryViewModel;
         }
     }
 }

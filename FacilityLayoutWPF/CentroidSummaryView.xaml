@@ -1,0 +1,69 @@
+﻿<UserControl
+    x:Class="FacilityLayoutWPF.CentroidSummaryView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dv="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+    xmlns:local="clr-namespace:FacilityLayoutWPF"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:FacilityLayoutWPF.ViewModels"
+    d:DesignHeight="300"
+    d:DesignWidth="300"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style TargetType="{x:Type dv:Chart}">
+            <Setter Property="MinHeight" Value="250" />
+            <Setter Property="MinWidth" Value="100" />
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <ListBox
+            MaxWidth="900"
+            ItemsSource="{Binding CentroidSummary}"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <dv:Chart Style="{DynamicResource MyChartStyle}">
+                        <dv:Chart.Title>
+                            <TextBlock Text="{Binding Key, StringFormat=Department \{0\} Centroids}" />
+                        </dv:Chart.Title>
+                        <dv:Chart.LegendStyle>
+                            <Style TargetType="Control">
+                                <Setter Property="Width" Value="0" />
+                                <Setter Property="Height" Value="0" />
+                            </Style>
+                        </dv:Chart.LegendStyle>
+                        <dv:ScatterSeries
+                            Title="Department"
+                            DependentValueBinding="{Binding Y}"
+                            IndependentValueBinding="{Binding X}"
+                            ItemsSource="{Binding Value.Points}">
+                            <dv:ScatterSeries.DependentRangeAxis>
+                                <dv:LinearAxis
+                                    Title="Row"
+                                    Interval="2"
+                                    Minimum="0"
+                                    Orientation="Y"
+                                    ShowGridLines="True" />
+                            </dv:ScatterSeries.DependentRangeAxis>
+
+                        </dv:ScatterSeries>
+                        <dv:Chart.Axes>
+                            <dv:LinearAxis
+                                Title="Column"
+                                Interval="2"
+                                Minimum="0"
+                                Orientation="X"
+                                ShowGridLines="True" />
+                        </dv:Chart.Axes>
+                    </dv:Chart>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>
