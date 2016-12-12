@@ -7,13 +7,14 @@
     xmlns:visualizationToolkit="clr-namespace:System.Windows.Controls.DataVisualization;assembly=System.Windows.Controls.DataVisualization.Toolkit">
 
     <SolidColorBrush x:Key="LightYellowBrush" Color="#FFFAF6BD" />
-    <SolidColorBrush x:Key="DarkBlueBrush" Color="#FF144578" />
+    <SolidColorBrush x:Key="DarkBlueBrush" Color="#FF565B7D" />
     <Style x:Key="MyChartStyle" TargetType="{x:Type chartingToolkit:Chart}">
         <Setter Property="BorderBrush" Value="Black" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Padding" Value="10" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Palette">
             <Setter.Value>
                 <visualizationToolkit:ResourceDictionaryCollection>

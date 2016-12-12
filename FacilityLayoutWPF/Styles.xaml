@@ -3,10 +3,32 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:dv="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
     xmlns:local="clr-namespace:FacilityLayoutWPF">
+
+    <Color x:Key="DarkPrimary">#FF565B7D</Color>
+    <Color x:Key="MidDarkPrimary">#FF767A93</Color>
+    <Color x:Key="MidLightPrimary">#FFC5C6CE</Color>
+    <Color x:Key="LightPrimary">#FFEFF0F1</Color>
+
+    <Color x:Key="DarkSecondary">#FFD5CF83</Color>
+    <Color x:Key="MidDarkSecondary">#FFFAF6BD</Color>
+    <Color x:Key="MidLightSecondary">#FFFFFDDE</Color>
+    <Color x:Key="LightSecondary">#FFFFFEF4</Color>
+
+    <SolidColorBrush x:Key="DarkPrimaryBrush" Color="{StaticResource DarkPrimary}" />
+    <SolidColorBrush x:Key="MidDarkPrimaryBrush" Color="{StaticResource MidDarkPrimary}" />
+    <SolidColorBrush x:Key="MidLightPrimaryBrush" Color="{StaticResource MidLightPrimary}" />
+    <SolidColorBrush x:Key="LightPrimaryBrush" Color="{StaticResource LightPrimary}" />
+
+    <SolidColorBrush x:Key="DarkSecondaryBrush" Color="{StaticResource DarkSecondary}" />
+    <SolidColorBrush x:Key="MidDarkSecondaryBrush" Color="{StaticResource MidDarkSecondary}" />
+    <SolidColorBrush x:Key="MidLightSecondaryBrush" Color="{StaticResource MidLightSecondary}" />
+    <SolidColorBrush x:Key="LightSecondaryBrush" Color="{StaticResource LightSecondary}" />
+
     <Style TargetType="TextBlock">
         <Setter Property="HorizontalAlignment" Value="Right" />
         <Setter Property="Margin" Value="5" />
         <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Foreground" Value="{StaticResource LightSecondaryBrush}" />
     </Style>
     <Style
         x:Key="Header"
@@ -17,11 +39,15 @@
         <Setter Property="FontSize" Value="16" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="TextDecorations" Value="Underline" />
+        <Setter Property="Foreground" Value="{StaticResource LightSecondaryBrush}" />
     </Style>
     <Style TargetType="TextBox">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="Margin" Value="5" />
         <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Background" Value="{StaticResource LightPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource DarkPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DarkPrimaryBrush}" />
         <Style.Resources>
             <Style TargetType="Border">
                 <Setter Property="CornerRadius" Value="3" />
@@ -30,17 +56,29 @@
     </Style>
     <Style TargetType="Button">
         <Setter Property="Margin" Value="5" />
+        <Setter Property="Background" Value="{StaticResource MidDarkSecondaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DarkSecondaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource DarkPrimaryBrush}" />
+        <Setter Property="FontWeight" Value="Bold" />
         <Style.Resources>
             <Style TargetType="Border">
                 <Setter Property="CornerRadius" Value="3" />
             </Style>
         </Style.Resources>
     </Style>
-
+    <Style TargetType="ListBox">
+        <Setter Property="Background" Value="{x:Null}" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style TargetType="ListBoxItem">
+        <Setter Property="Background" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="{StaticResource LightPrimaryBrush}" />
+    </Style>
     <Style x:Key="ListBoxItemButton" TargetType="Button">
         <Setter Property="Margin" Value="0" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Background" Value="White" />
+        <Setter Property="Background" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="{StaticResource LightPrimaryBrush}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -57,5 +95,34 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+    <Style x:Key="MainGridStyle" TargetType="{x:Type Grid}">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                    <GradientStop Offset="0.65" Color="{StaticResource DarkPrimary}" />
+                    <GradientStop Offset="1" Color="{StaticResource MidLightPrimary}" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="TabItem">
+        <Setter Property="Background" Value="{x:Null}" />
+        <Setter Property="BorderBrush" Value="{StaticResource LightPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource LightSecondaryBrush}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True">
+                <Setter Property="Background" Value="{StaticResource LightPrimaryBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource DarkPrimaryBrush}" />
+                <Setter Property="FontWeight" Value="Bold" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <!--
+        Necessary to include this so that the VDP summary view ges its labels colored properly. Centroid doesn't need it
+        because it inherits its label colors from listboxitem
+    -->
+    <Style TargetType="ContentControl">
+        <Setter Property="Foreground" Value="{StaticResource LightPrimaryBrush}" />
     </Style>
 </ResourceDictionary>

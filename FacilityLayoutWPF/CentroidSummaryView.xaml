@@ -11,10 +11,15 @@
     d:DesignWidth="300"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <Style TargetType="{x:Type dv:Chart}">
-            <Setter Property="MinHeight" Value="250" />
-            <Setter Property="MinWidth" Value="100" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="{x:Type dv:Chart}">
+                <Setter Property="MinHeight" Value="250" />
+                <Setter Property="MinWidth" Value="100" />
+            </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <ListBox
