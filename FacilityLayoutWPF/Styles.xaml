@@ -6,6 +6,8 @@
 
     <Color x:Key="DarkPrimary">#FF565B7D</Color>
     <Color x:Key="MidDarkPrimary">#FF767A93</Color>
+    <Color x:Key="MidDarkPrimarySemiTransparent">#B2767A93</Color>
+    <Color x:Key="MidDarkPrimaryTransparent">#00767A93</Color>
     <Color x:Key="MidLightPrimary">#FFC5C6CE</Color>
     <Color x:Key="LightPrimary">#FFEFF0F1</Color>
 
@@ -46,8 +48,9 @@
         <Setter Property="Margin" Value="5" />
         <Setter Property="VerticalAlignment" Value="Bottom" />
         <Setter Property="Background" Value="{StaticResource LightPrimaryBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource DarkPrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource DarkPrimaryBrush}" />
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="BorderBrush" Value="{StaticResource MidLightPrimaryBrush}" />
+        <Setter Property="Opacity" Value="0.7" />
         <Style.Resources>
             <Style TargetType="Border">
                 <Setter Property="CornerRadius" Value="3" />
@@ -56,15 +59,9 @@
     </Style>
     <Style TargetType="Button">
         <Setter Property="Margin" Value="5" />
-        <Setter Property="Background" Value="{StaticResource MidDarkSecondaryBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource DarkSecondaryBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource DarkPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource LightPrimaryBrush}" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Style.Resources>
-            <Style TargetType="Border">
-                <Setter Property="CornerRadius" Value="3" />
-            </Style>
-        </Style.Resources>
     </Style>
     <Style TargetType="ListBox">
         <Setter Property="Background" Value="{x:Null}" />
@@ -125,4 +122,96 @@
     <Style TargetType="ContentControl">
         <Setter Property="Foreground" Value="{StaticResource LightPrimaryBrush}" />
     </Style>
+
+    <ControlTemplate x:Key="GlassButton" TargetType="{x:Type ButtonBase}">
+        <Border
+            x:Name="border"
+            BorderBrush="{StaticResource LightPrimaryBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="4"
+            SnapsToDevicePixels="True">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                    <GradientStop Offset="0" Color="#33575757" />
+                    <GradientStop Offset="1" Color="#66FFFFFF" />
+                    <GradientStop Offset="0.6" Color="#33B8B8B8" />
+                    <GradientStop Offset="0.65" Color="#33878787" />
+                    <GradientStop Offset="0.8" Color="#33C9C9C9" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border
+                x:Name="innerBorder"
+                Background="#66000000"
+                BorderBrush="Black"
+                BorderThickness="1"
+                CornerRadius="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Border
+                        x:Name="gridTopShineBorder"
+                        Grid.Row="0"
+                        Panel.ZIndex="1"
+                        CornerRadius="4,4,0,0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Offset="0.004" Color="#4CFFFFFF" />
+                                <GradientStop Offset="1" Color="#19FFFFFF" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <Border
+                        x:Name="gridRadialShineBorder"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Opacity="0">
+                        <Border.Background>
+                            <RadialGradientBrush Center="0.5,1" GradientOrigin="0.5,1" RadiusX="1" RadiusY="1">
+                                <GradientStop Offset="0" Color="{StaticResource MidDarkPrimarySemiTransparent}" />
+                                <GradientStop Offset="1" Color="{StaticResource MidDarkPrimaryTransparent}" />
+                            </RadialGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <ContentPresenter
+                        x:Name="contentPresenter"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Margin="{TemplateBinding Padding}"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                        Panel.ZIndex="2"
+                        Content="{TemplateBinding Content}"
+                        ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        Focusable="False"
+                        RecognizesAccessKey="True"
+                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                </Grid>
+            </Border>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Button.IsDefaulted" Value="True">
+                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="gridRadialShineBorder" Property="Opacity" Value="1" />
+                <!--<Setter TargetName="border" Property="BorderBrush" Value="#FF3C7FB1" />-->
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="border" Property="Background" Value="#FFC4E5F6" />
+                <Setter TargetName="border" Property="BorderBrush" Value="#FF2C628B" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="True">
+                <Setter TargetName="border" Property="Background" Value="#FFBCDDEE" />
+                <Setter TargetName="border" Property="BorderBrush" Value="#FF245A83" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="border" Property="Background" Value="#FFF4F4F4" />
+                <Setter TargetName="border" Property="BorderBrush" Value="#FFADB2B5" />
+                <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="#FF838383" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
 </ResourceDictionary>

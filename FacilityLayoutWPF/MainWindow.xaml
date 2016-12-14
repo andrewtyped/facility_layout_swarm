@@ -11,9 +11,9 @@
     Title="MainWindow"
     Background="White"
     Foreground="Black"
+    ResizeMode="NoResize"
     SizeToContent="WidthAndHeight"
-    mc:Ignorable="d"
-    ResizeMode="NoResize">
+    mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -35,6 +35,14 @@
         <vm:FacilityLayoutViewModel />
     </Window.DataContext>
     <Grid Style="{DynamicResource MainGridStyle}">
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                <GradientStop Color="#FF393D59" />
+                <GradientStop Offset="1" Color="#FFC5C6CE" />
+                <GradientStop Offset="0.7" Color="#FF565B7D" />
+                <GradientStop Offset="0.9" Color="#FF7F83A4" />
+            </LinearGradientBrush>
+        </Grid.Background>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
@@ -174,11 +182,13 @@
                     <Button
                         Padding="5"
                         Command="{Binding LoadFacilityData}"
-                        Content="Load Facility Data" />
+                        Content="Load Facility Data"
+                        Template="{DynamicResource GlassButton}" />
                     <Button
                         Padding="5"
                         Command="{Binding Solve}"
-                        Content="Solve" />
+                        Content="Solve"
+                        Template="{DynamicResource GlassButton}" />
                 </WrapPanel>
                 <TextBlock
                     Grid.Row="7"
